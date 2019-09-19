@@ -1,0 +1,42 @@
+{
+  "stringTable": {
+    "0": "D:/Android/Code/SecShell/app/.cxx/cmake/debug/x86",
+    "1": "--target=i686-none-linux-android16 --gcc-toolchain=D:/Android/AndroidNDK/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=D:/Android/AndroidNDK/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dseclib_EXPORTS -ID:/Android/Code/SecShell/app/src/main/cpp/src/main/cpp -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -mstackrealign -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security -O0 -fno-limit-debug-info -fPIC"
+  },
+  "buildFiles": [
+    "D:\\Android\\AndroidNDK\\build\\cmake\\android.toolchain.cmake",
+    "D:\\Android\\AndroidNDK\\build\\cmake\\platforms.cmake",
+    "D:\\Android\\Code\\SecShell\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "D:\\Android\\AndroidSDK\\cmake\\3.10.2.4988404\\bin\\ninja.exe -C \"D:\\Android\\Code\\SecShell\\app\\.cxx\\cmake\\debug\\x86\" clean"
+  ],
+  "buildTargetsCommand": "D:\\Android\\AndroidSDK\\cmake\\3.10.2.4988404\\bin\\ninja.exe -C \"D:\\Android\\Code\\SecShell\\app\\.cxx\\cmake\\debug\\x86\" {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "seclib-Debug-x86": {
+      "buildCommand": "D:\\Android\\AndroidSDK\\cmake\\3.10.2.4988404\\bin\\ninja.exe -C \"D:\\Android\\Code\\SecShell\\app\\.cxx\\cmake\\debug\\x86\" seclib",
+      "buildType": "debug",
+      "toolchain": "2018925728",
+      "abi": "x86",
+      "artifactName": "seclib",
+      "files": [
+        {
+          "src": "D:\\Android\\Code\\SecShell\\app\\src\\main\\cpp\\seclib.cpp",
+          "flagsOrdinal": 1,
+          "workingDirectoryOrdinal": 0
+        }
+      ],
+      "headers": [],
+      "output": "D:\\Android\\Code\\SecShell\\app\\build\\intermediates\\cmake\\debug\\obj\\x86\\libseclib.so"
+    }
+  },
+  "toolchains": {
+    "2018925728": {
+      "cppCompilerExecutable": "D:\\Android\\AndroidNDK\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

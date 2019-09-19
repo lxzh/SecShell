@@ -1,0 +1,7 @@
+[
+{
+  "directory": "D:/Android/Code/SecShell/libshell/.cxx/cmake/release/armeabi-v7a",
+  "command": "D:\\Android\\AndroidNDK\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=armv7-none-linux-androideabi16 --gcc-toolchain=D:/Android/AndroidNDK/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=D:/Android/AndroidNDK/toolchains/llvm/prebuilt/windows-x86_64/sysroot  -Dseclib_EXPORTS -ID:/Android/Code/SecShell/libshell/src/main/cpp/src/main/cpp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -march=armv7-a -mthumb -Wa,--noexecstack -Wformat -Werror=format-security   -Oz -DNDEBUG  -fPIC   -o CMakeFiles\\seclib.dir\\seclib.cpp.o -c D:\\Android\\Code\\SecShell\\libshell\\src\\main\\cpp\\seclib.cpp",
+  "file": "D:\\Android\\Code\\SecShell\\libshell\\src\\main\\cpp\\seclib.cpp"
+}
+]

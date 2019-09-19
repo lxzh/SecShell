@@ -1,0 +1,9 @@
+# ninja log v5
+0	185	590590821	CMakeFiles/seclib.dir/seclib.cpp.o	d0c5fd0436ed9b5b
+186	317	590590821	D:/Android/Code/SecShell/libshell/build/intermediates/cmake/debug/obj/x86_64/libseclib.so	efce9ae0ac03ac5
+2	171	590590888	CMakeFiles/seclib.dir/seclib.cpp.o	d0c5fd0436ed9b5b
+171	290	590590888	D:/Android/Code/SecShell/libshell/build/intermediates/cmake/debug/obj/x86_64/libseclib.so	efce9ae0ac03ac5
+3	177	590590910	CMakeFiles/seclib.dir/seclib.cpp.o	d0c5fd0436ed9b5b
+177	297	590590910	D:/Android/Code/SecShell/libshell/build/intermediates/cmake/debug/obj/x86_64/libseclib.so	efce9ae0ac03ac5
+2	160	590590929	CMakeFiles/seclib.dir/seclib.cpp.o	d0c5fd0436ed9b5b
+160	268	590590929	D:/Android/Code/SecShell/libshell/build/intermediates/cmake/debug/obj/x86_64/libseclib.so	efce9ae0ac03ac5

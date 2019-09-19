@@ -1,0 +1,14 @@
+# ninja log v5
+1	881	590582979	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+883	1146	590582980	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997
+3	517	590583409	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+517	631	590583409	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997
+4	184	590584092	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+184	304	590584092	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997
+3	213	590584407	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+213	354	590584407	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997
+1	14	0	clean	6078b71a6cc83c3
+5	232	590584435	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+233	368	590584436	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997
+3	160	590584461	CMakeFiles/seclib.dir/seclib.cpp.o	87896da07aae09d
+160	262	590584461	D:/Android/Code/SecShell/app/build/intermediates/cmake/debug/obj/arm64-v8a/libseclib.so	c9483aa55ea71997

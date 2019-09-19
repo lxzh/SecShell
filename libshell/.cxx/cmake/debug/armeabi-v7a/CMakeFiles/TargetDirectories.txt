@@ -1,0 +1,3 @@
+D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/armeabi-v7a/CMakeFiles/seclib.dir
+D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/armeabi-v7a/CMakeFiles/rebuild_cache.dir
