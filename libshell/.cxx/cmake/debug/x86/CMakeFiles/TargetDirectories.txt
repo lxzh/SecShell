@@ -1,3 +1,0 @@
-D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/x86/CMakeFiles/seclib.dir
-D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/x86/CMakeFiles/edit_cache.dir
-D:/Android/Code/SecShell/libshell/.cxx/cmake/debug/x86/CMakeFiles/rebuild_cache.dir

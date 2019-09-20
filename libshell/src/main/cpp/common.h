@@ -63,6 +63,9 @@ __FILE__, __LINE__, #x), *(int*)39=39, (void)0) )
 # define IF_LOGVV() if (false)
 #endif
 
+#define TAG "Shell"
+#define LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO, TAG, FORMAT, ##__VA_ARGS__);
+#define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR, TAG, FORMAT, ##__VA_ARGS__);
 
 /*
  * These match the definitions in the VM specification.

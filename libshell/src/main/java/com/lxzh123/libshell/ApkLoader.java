@@ -29,7 +29,7 @@ public class ApkLoader extends DexClassLoader {
         byte[] dexArrays = getApkData(context);
         ByteBuffer byteBuffer = ByteBuffer.wrap(dexArrays);
 //        InMemoryDexClassLoader inMemoryDexClassLoader = new InMemoryDexClassLoader(byteBuffer, context.getClassLoader());
-        this.mCookie = Helper.loadDex(dexArrays, dexArrays.length);
+        this.mCookie = Helper.loadDex(dexArrays, (long)dexArrays.length);
 //      this.mCookie = (Integer) RefInvoke.invokeStaticMethod(mDexFileName,
 //                "openDexFile",
 //                new Class[]{Object.class},

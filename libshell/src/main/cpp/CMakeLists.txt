@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
+set (SRC_LIST seclib.cpp DexLoader.cpp fake_dlfcn.cpp)
 add_library( # Sets the name of the library.
              seclib
 
@@ -17,8 +18,12 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             seclib.cpp)
+             ${SRC_LIST})
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O0")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#set(CMAKE_C_COMPILER "clang")
+#set(CMAKE_CXX_COMPILER "clang++")
 include_directories(src/main/cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -40,7 +45,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
                        seclib
-
+                       android
                        # Links the target library to the log library
                        # included in the NDK.
                        ${log-lib} )

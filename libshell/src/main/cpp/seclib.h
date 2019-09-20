@@ -10,13 +10,13 @@ extern "C" {
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved);
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM* vm, void* reserved);
-/*
- * Class:     com_lxzh123_libshell_Shell
- * Method:    loadDex
- * Signature: ([BJ)I
- */
-JNIEXPORT jint JNICALL Java_com_lxzh123_libshell_Helper_loadDex
-        (JNIEnv *, jclass, jbyteArray, jlong);
+///*
+// * Class:     com_lxzh123_libshell_Shell
+// * Method:    loadDex
+// * Signature: ([BJ)I
+// */
+//JNIEXPORT jint JNICALL Java_com_lxzh123_libshell_Helper_loadDex
+//        (JNIEnv *, jclass, jbyteArray, jlong);
 
 #ifdef __cplusplus
 }

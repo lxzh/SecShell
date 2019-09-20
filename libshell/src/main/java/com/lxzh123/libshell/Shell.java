@@ -21,6 +21,7 @@ public class Shell {
 
     public void init(Context context) {
         try {
+            Log.e(TAG, "init");
             Helper.loadCore(context);
         } catch (Exception ex) {
             Log.e(TAG, "loadCore Exception ex=" + ex.getMessage());
