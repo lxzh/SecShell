@@ -44,6 +44,7 @@ captures/
 .idea/caches
 
 app/.cxx
+libshell/.cxx
 
 # Keystore files
 # Uncomment the following line if you do not want to check your keystore files in.
