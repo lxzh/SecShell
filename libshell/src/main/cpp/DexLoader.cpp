@@ -164,7 +164,7 @@ const void *LoadByteArt24(void *libArthandler, const char *base, size_t size)
 	memset(retcookie, 0, 0x78);
 
 	// #define SEARCH_SYMBOL_Nougat		//												_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_																																	_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
-	org_artDexFileOpenMemory24 func = (org_artDexFileOpenMemory24)dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
+	org_artDexFileOpenMemory24 func = (org_artDexFilej)dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
 
 	if (!func)
 	{

@@ -101,6 +101,7 @@ jint ArtLoadByte(const char* base, size_t size)
             break;
         case 24:
         case 25:
+            LOGI("art24 or art25");
             cookie = LoadByteArt24(libartHandler, base, size);
             if (cookie){
                 dex_files.push_back(cookie);
