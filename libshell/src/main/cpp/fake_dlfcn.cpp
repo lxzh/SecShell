@@ -37,14 +37,17 @@
 //#endif
 
 #if defined(__arm__) || defined(__i386__)
+#define BIT_WIDTH 32
 #define Elf_Ehdr Elf32_Ehdr
 #define Elf_Shdr Elf32_Shdr
 #define Elf_Sym  Elf32_Sym
 #elif defined(__aarch64__) || defined(__x86_64__)
+#define BIT_WIDTH 64
 #define Elf_Ehdr Elf64_Ehdr
 #define Elf_Shdr Elf64_Shdr
 #define Elf_Sym  Elf64_Sym
 #else
+#define BIT_WIDTH 0
 #error "Arch unknown, please port me" 
 #endif
 
@@ -75,6 +78,7 @@ int fake_dlclose(void *handle) {
 /* flags are ignored */
 
 void *fake_dlopen(const char *libpath, int flags) {
+    log_info("Android BIT_WIDTH:%d", BIT_WIDTH);
 	FILE *maps;
 	char buff[256];
 	struct ctx *ctx = 0;

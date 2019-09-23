@@ -148,7 +148,7 @@ jint JNICALL loadDex(JNIEnv *env,
     result = static_cast<jint>(reinterpret_cast<uintptr_t>(pResult.l));
 //    result = (jint) pResult.l;
 
-    LOGI("loadDex dexLen=%lld result=%d", dexLen, result);
+    LOGI("loadDex dexLen=%ld result=%d", dexLen, result);
     return result;
 }
 
