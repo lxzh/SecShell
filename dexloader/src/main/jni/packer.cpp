@@ -33,14 +33,12 @@
 
 using namespace std;
 
-#if defined(__arm__) || defined(__i386__)
-#define LIB_ART_PATH            "/system/lib/libart.so"
-#define LIB_ART_COMPILER_PATH   "/system/lib/libart-compiler.so"
-#elif defined(__aarch64__) || defined(__x86_64__)
+#if defined(__aarch64__) || defined(__x86_64__)
 #define LIB_ART_PATH            "/system/lib64/libart.so"
 #define LIB_ART_COMPILER_PATH   "/system/lib64/libart-compiler.so"
-#else
-#error "unknown architecture!"
+#else //defined(__arm__) || defined(__i386__)
+#define LIB_ART_PATH            "/system/lib/libart.so"
+#define LIB_ART_COMPILER_PATH   "/system/lib/libart-compiler.so"
 #endif
 
 //#define LIB_ART_PATH "/system/lib/libart.so"
@@ -103,9 +101,10 @@ unsigned char MINIDEX[292] = {
         0xD8, 0x00, 0x00, 0x00
 };
 
-void writemixdex(const char *minidex) {
+void write_mix_dex(const char *minidex) {
     // If the file exists,skip
     if (access(minidex, F_OK) == -1) {
+        LOGI("[+]write_mix_dex minidex:%s", minidex);
         FILE *file = fopen(minidex, "wb");
         fwrite(MINIDEX, 292, 1, file);
         fclose(file);
@@ -251,22 +250,19 @@ void make_dex_elements(JNIEnv *env, jobject classLoader, jobject dexFileobj) {
     jfieldID dexElementsid = env->GetFieldID(DexPathListClass, "dexElements",
                                              "[Ldalvik/system/DexPathList$Element;");
 
-    //��ȡelements���� get dexElement array value
+    //get dexElement array value
     jobjectArray dexElement = static_cast<jobjectArray>(env->GetObjectField(pathList,
                                                                             dexElementsid));
-
     jint len = env->GetArrayLength(dexElement);
+
     LOGD("[+]Elements size:%d", len);
 
-    jclass ElementClass = env->FindClass(
-            "dalvik/system/DexPathList$Element");// dalvik/system/DexPathList$Element
+    jclass ElementClass = env->FindClass("dalvik/system/DexPathList$Element");// dalvik/system/DexPathList$Element
     jmethodID Elementinit = env->GetMethodID(ElementClass, "<init>",
                                              "(Ljava/io/File;ZLjava/io/File;Ldalvik/system/DexFile;)V");
     jboolean isDirectory = JNI_FALSE;
 
-    //����һ���µ�dalvik/system/DexPathList$Element�� dexFileobjΪ�µ�dexFileobj
-    jobject element_obj = env->NewObject(ElementClass, Elementinit, NULL, isDirectory, NULL,
-                                         dexFileobj);
+    jobject element_obj = env->NewObject(ElementClass, Elementinit, NULL, isDirectory, NULL, dexFileobj);
 
     //Get dexElement all values and add  add each value to the new array
     jobjectArray new_dexElement = env->NewObjectArray(len + 1, ElementClass, NULL);
@@ -288,24 +284,26 @@ void make_dex_elements(JNIEnv *env, jobject classLoader, jobject dexFileobj) {
 
 
 //For Nougat
-void replace_cookie_N(JNIEnv *env, jobject minidexfileobj, jlong value) {
+void replace_cookie_N(JNIEnv *env, jobject mini_dex_obj, jlong value) {
     LOGI("replace_cookie_N");
-    jclass DexFileClass = env->FindClass(
-            "dalvik/system/DexFile");//"dalvik/system/DexPathList$Element"
+    jclass DexFileClass = env->FindClass("dalvik/system/DexFile");//"dalvik/system/DexPathList$Element"
     jfieldID field_mCookie;
     jobject mCookie;
+
     field_mCookie = env->GetFieldID(DexFileClass, "mCookie", "Ljava/lang/Object;");
-    mCookie = env->GetObjectField(minidexfileobj, field_mCookie);
+    mCookie = env->GetObjectField(mini_dex_obj, field_mCookie);
 
     jboolean is_data_copy = 1;
-    jsize arraylen = env->GetArrayLength((jarray) mCookie);
-    LOGD("[+]g_sdk_int:%d,cookie arrayLen:%d", g_sdk_int, arraylen);
+    jsize array_len = env->GetArrayLength((jarray) mCookie);
+    LOGD("[+]g_sdk_int:%d, cookie arrayLen:%d", g_sdk_int, array_len);
 
     jlong *mix_element = env->GetLongArrayElements((jlongArray) mCookie, &is_data_copy);
     jlong *dex_info = (jlong *) value;
 
     jlong *tmp = mix_element;
+    LOGI("[+]replace_cookie_N before replace cookie:%lld value=%lld", (jlong)(*(tmp + 1)), value);
     *(tmp + 1) = value;
+    LOGI("[+]replace_cookie_N after  replace cookie:%lld", (jlong)(*(tmp + 1)));
     //更新mCookie
     env->ReleaseLongArrayElements((jlongArray) mCookie, mix_element, 0);
     if (env->ExceptionCheck()) {
@@ -315,32 +313,32 @@ void replace_cookie_N(JNIEnv *env, jobject minidexfileobj, jlong value) {
 
     jlong *second_mix_element = env->GetLongArrayElements((jlongArray) mCookie, &is_data_copy);
     jlong ptr = *(second_mix_element + 1);
-    int dexbase = *(int *) (ptr + 4);
-    int dexsize = *(int *) (ptr + 8);
-    LOGD("[+]Nougat after replace cookie dex base:%x,dexsize:%x", dexbase, dexsize);
+    int dex_base = *(int *) (ptr + 4);
+    int dex_size = *(int *) (ptr + 8);
+    LOGD("[+]Nougat after replace cookie dex_base:%x, dex_size:%x", dex_base, dex_size);
 }
 
 
-void replace_cookie_M(JNIEnv *env, jobject minidexfileobj, jlong value) {
+void replace_cookie_M(JNIEnv *env, jobject mini_dex_obj, jlong value) {
     LOGI("replace_cookie_M");
-    jclass DexFileClass = env->FindClass(
-            "dalvik/system/DexFile");//"dalvik/system/DexPathList$Element"
+    jclass DexFileClass = env->FindClass("dalvik/system/DexFile");//"dalvik/system/DexPathList$Element"
     jfieldID field_mCookie;
     jobject mCookie;
+
     field_mCookie = env->GetFieldID(DexFileClass, "mCookie", "Ljava/lang/Object;");
-    mCookie = env->GetObjectField(minidexfileobj, field_mCookie);
+    mCookie = env->GetObjectField(mini_dex_obj, field_mCookie);
 
     jboolean is_data_copy = 1;
     jsize arraylen = env->GetArrayLength((jarray) mCookie);
-    LOGD("[+]g_sdk_int:%d,cookie arrayLen:%d", g_sdk_int, arraylen);
+    LOGD("[+]g_sdk_int:%d, cookie arrayLen:%d", g_sdk_int, arraylen);
 
     jlong *mix_element = env->GetLongArrayElements((jlongArray) mCookie, &is_data_copy);
 
     //这里的mix_element 等价于openMemory的返回值
-    int ptr = *(int *) mix_element;
-    int dexbase = *(int *) (ptr + 4);
-    int dexsize = *(int *) (ptr + 8);
-    LOGD("[+]mini dex array len :%d,dex magic:%x,dexsize:%x", arraylen, *(int *) dexbase, dexsize);
+    int ptr = *(int *)mix_element;
+    int dex_base = *(int *) (ptr + 4);
+    int dex_size = *(int *) (ptr + 8);
+    LOGD("[+]mini dex array len :%d,dex magic:%x,dexsize:%x", arraylen, *(int *) dex_base, dex_size);
     // very important
     // jlong* tmp=mix_element;
     // *tmp=*dex_info;
@@ -351,11 +349,12 @@ void replace_cookie_M(JNIEnv *env, jobject minidexfileobj, jlong value) {
         LOGE("[-]g_sdk_int:%d Update cookie failed", g_sdk_int);
         return;
     }
+
     jlong *second_mix_element = env->GetLongArrayElements((jlongArray) mCookie, &is_data_copy);
     ptr = *(int *) second_mix_element;
-    dexbase = *(int *) (ptr + 4);
-    dexsize = *(int *) (ptr + 8);
-    LOGD("[+]second minidex dex dex magic:%x,dexsize:%x", *(int *) dexbase, dexsize);
+    dex_base = *(int *) (ptr + 4);
+    dex_size = *(int *) (ptr + 8);
+    LOGD("[+]second minidex dex dex magic:%x,dexsize:%x", *(int *) dex_base, dex_size);
     LOGD("[+]replace_cookie_one successful");
 }
 
@@ -425,21 +424,6 @@ jobject load_dex_fromfile(JNIEnv *env, const char *inPath, const char *outPath) 
     return dexobj;
 }
 
-int sdkVersion()
-{
-    static bool done = false;
-    static int sdkVersion = 0;
-    if (!done)
-    {
-        done = true;
-        char propValue[PROP_VALUE_MAX] = {0};
-        __system_property_get("ro.build.version.sdk", propValue);
-        sdkVersion = atoi(propValue);
-    }
-
-    return sdkVersion;
-}
-
 void *get_lib_handle(const char *lib_path) {
     void *handle_art = dlopen(lib_path, RTLD_NOW);
     if (!handle_art) {
@@ -451,12 +435,11 @@ void *get_lib_handle(const char *lib_path) {
 
 void* getLibartHandler(const char* libartName)
 {
-    int sdk_version = sdkVersion();
     void *handle_art;
-    if (sdk_version < 23) {
+    if (g_sdk_int < 23) {
         // Android L, art::JavaVMExt::AddWeakGlobalReference(art::Thread*, art::mirror::Object*)
         handle_art = dlopen(libartName, RTLD_LAZY | RTLD_GLOBAL);
-    }else if (sdk_version < 24) {
+    }else if (g_sdk_int < 24) {
         // Android M, art::JavaVMExt::AddWeakGlobalRef(art::Thread*, art::mirror::Object*)
         handle_art = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
     } else {
@@ -490,13 +473,12 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
 
     //这里可以mmap 加密后的dex，在内存中解密
     g_maindex_base = mmap_dex(szDexPath);
-    LOGD("[+]mmap dex base:0x%p,size:%d,page_size:%d", g_maindex_base, g_dexSize, g_pageSize);
+    LOGD("[+]mmap dex base:0x%p, size:%d, page_size:%d", g_maindex_base, g_dexSize, g_pageSize);
 
     sprintf(inPath, "%s/.shell/mini.dex", g_file_dir);
     sprintf(outPath, "%s/.shell/libcore.oat", g_file_dir);
-    writemixdex(inPath);
+    write_mix_dex(inPath);
     mini_dex_obj = load_dex_fromfile(env, inPath, outPath);
-//    mini_dex_obj = load_dex_fromfile(env, szDexPath, outPath);
     LOGD("[+]Start mem load dex");
     if (!g_isArt) {
         jint mCookie = mem_loadDex_dvm(env, (char *) szDexPath);
@@ -673,8 +655,9 @@ void native_attachBaseContext(JNIEnv *env, jobject obj, jobject ctx) {
     sprintf(shellDir, "%s/.shell", g_file_dir);
     sprintf(shellPath, "%s/.shell/%s", g_file_dir, JIAMI_MAGIC);
     LOGD("[+]shellDir:%s,shellPath:%s", shellDir, shellPath);
-    extract_file(env, ctx, shellDir, shellPath, JIAMI_MAGIC);
 
+    //extract encrypted dex from assets
+    extract_file(env, ctx, shellDir, shellPath, JIAMI_MAGIC);
     //mem loadDex
     mem_loadDex(env, ctx, shellPath);
     LOGD("[+]native_attachBaseContext:mem_loadDex finished");

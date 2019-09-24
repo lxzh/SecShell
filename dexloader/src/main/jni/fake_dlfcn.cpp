@@ -78,7 +78,6 @@ int fake_dlclose(void *handle) {
 /* flags are ignored */
 
 void *fake_dlopen(const char *libpath, int flags) {
-    log_info("Android BIT_WIDTH:%d", BIT_WIDTH);
 	FILE *maps;
 	char buff[256];
 	struct ctx *ctx = 0;
@@ -130,7 +129,7 @@ void *fake_dlopen(const char *libpath, int flags) {
 	for (k = 0; k < elf->e_shnum; k++, shoff += elf->e_shentsize) {
 
 		Elf_Shdr *sh = (Elf_Shdr *) shoff;
-		log_dbg("%s: k=%d shdr=%p type=%x", __func__, k, sh, sh->sh_type);
+//		log_dbg("%s: k=%d shdr=%p type=%x", __func__, k, sh, sh->sh_type);
 
 		switch (sh->sh_type) {
 

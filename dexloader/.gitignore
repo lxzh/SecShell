@@ -1,3 +1,4 @@
 /build
 /.cxx
 /src/main/obj
+/src/main/libs
