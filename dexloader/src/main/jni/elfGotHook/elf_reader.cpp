@@ -106,7 +106,7 @@ const static struct Elf_Dynamic_Rel_Type_Map {
     const char* name;
     ElfW(Xword) value;
 } ELF_DYNAMIC_REL_TYPE_MAP[] = {
-#if defined(__arm__)
+#if defined(__arm__) || defined(__i386__)
     {"R_ARM_NONE", R_ARM_NONE},
     {"R_ARM_PC24", R_ARM_PC24},
     {"R_ARM_ABS32", R_ARM_ABS32},
@@ -178,7 +178,7 @@ const static struct Elf_Dynamic_Rel_Type_Map {
     {"R_ARM_RABS32", R_ARM_RABS32},
     {"R_ARM_RPC24", R_ARM_RPC24},
     {"R_ARM_RBASE", R_ARM_RBASE},
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__x86_64__)
     {"R_AARCH64_NONE", R_AARCH64_NONE},
     {"R_AARCH64_ABS64", R_AARCH64_ABS64},
     {"R_AARCH64_ABS32", R_AARCH64_ABS32},
@@ -558,6 +558,10 @@ int ElfReader::elfTargetMachine() {
     return EM_ARM;
 #elif defined(__aarch64__)
     return EM_AARCH64;
+#elif defined(__i386__)
+    return EM_386;
+#elif defined(__x86_64__)
+    return EM_X86_64;
 #else
     #error "unknown architecture!"
 #endif
@@ -784,7 +788,6 @@ int ElfReader::hookInternally(void *addr, void *new_func, void **old_func) {
         LOGD("already been hooked");
         return 0;
     }
-
 
     ElfW(Phdr) *phdr = findSegmentByAddress(addr);
     if (NULL == phdr) {

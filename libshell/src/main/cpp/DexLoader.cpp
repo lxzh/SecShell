@@ -16,7 +16,7 @@
 
 using namespace std;
 
-typedef const void* (*org1_artDexFileOpenMemory19)(unsigned char const*base, unsigned int size, std::string const& location, unsigned int location_checksum, void* mem_map);
+typedef const void* (*org_artDexFileOpenMemory19)(unsigned char const*base, unsigned int size, std::string const& location, unsigned int location_checksum, void* mem_map);
 
 typedef const void* (*org_artDexFileOpenMemory21)(const uint8_t* base, size_t size, const std::string& location, uint32_t location_checksum, void* mem_map, std::string* error_msg);
 
@@ -78,7 +78,7 @@ const void* LoadByteArt19(void* libArthandler, const char* base, size_t size)
 {
     std::string location = "";
     std::string err_msg;
-	org1_artDexFileOpenMemory19 func = (org1_artDexFileOpenMemory19)dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhjRKSsjPNS_6MemMapE");
+	org_artDexFileOpenMemory19 func = (org_artDexFileOpenMemory19)dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhjRKSsjPNS_6MemMapE");
 	if(!func){
 		return NULL;
 	}
@@ -163,9 +163,14 @@ const void *LoadByteArt24(void *libArthandler, const char *base, size_t size)
 	void *retcookie = malloc(0x78);
 	memset(retcookie, 0, 0x78);
 
-	// #define SEARCH_SYMBOL_Nougat		//												_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_																																	_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
-	org_artDexFileOpenMemory24 func = (org_artDexFileOpenMemory24)dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
+	// #define SEARCH_SYMBOL_Nougat		//												     _ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_																																	_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+	org_artDexFileOpenMemory24 func = (org_artDexFileOpenMemory24)fake_dlsym(libArthandler, "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
 
+	//xiaomi art32:_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+	//xiaomi art64:_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+	//Androidart32:_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+	//Androidart64:_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+	LOGI("[+]LoadByteArt24 fake_dlsym openMemory succeed");
 	if (!func)
 	{
 		LOGE("[-]sdk_int:%d dlsym openMemory failed:%s", 24, dlerror());
@@ -183,6 +188,7 @@ const void *LoadByteArt24(void *libArthandler, const char *base, size_t size)
         }
 #endif // ifndef SEARCH_SYMBOL_Nougat
 	}
+	LOGI("[+]LoadByteArt24 invoke func");
 	const Header *dex_header = reinterpret_cast<const Header *>(base);
 	const void *value = func(retcookie,
 					   (const unsigned char *)base,

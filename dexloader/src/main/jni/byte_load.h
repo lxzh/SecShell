@@ -25,9 +25,9 @@ typedef void* (*org_artDexFileOpenMemory23)(void* retcookie, const uint8_t* base
 											const void*oat_dex_file, std::string* error_msg);
 
 typedef void* (*orig_OpenCommon)(void* retcookie,const uint8_t* base,size_t size,
-                                const std::string& location,  uint32_t location_checksum,
-                                const void* oat_dex_file,  bool verify,
-                                bool verify_checksum,  std::string* error_msg, void* verify_result) ;
+                                 const std::string& location,  uint32_t location_checksum,
+                                 const void* oat_dex_file,  bool verify,
+                                 bool verify_checksum,  std::string* error_msg, void* verify_result) ;
 
 void* mem_loadDex_byte19(void* arthandler, const char* base, size_t size);
 

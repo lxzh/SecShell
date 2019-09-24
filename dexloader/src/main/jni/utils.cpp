@@ -147,7 +147,7 @@ int extract_file(JNIEnv* env, jobject ctx, const char* dir,const char* szDexPath
 	}
 
 	if (access(szDexPath,F_OK)==0) {
-	  LOGD("[+]File %s have existed",szDexPath);
+	    LOGD("[+]File %s have existed",szDexPath);
 		return 0;
 	}
 	//jiami.dat不存在，开始提取
@@ -193,11 +193,11 @@ void* get_module_base(pid_t pid, const char* module_name)
     char line[1024];
 
     if (pid < 0) {
-		LOGI("[+] get_module_base self process");
+		LOGI("[+]get_module_base self process");
         /* self process */
         snprintf(filename, sizeof(filename), "/proc/self/maps", pid);
     } else {
-		LOGI("[+] get_module_base pid:%d", (int)pid);
+		LOGI("[+]get_module_base pid:%d", (int)pid);
         snprintf(filename, sizeof(filename), "/proc/%d/maps", pid);
     }
 

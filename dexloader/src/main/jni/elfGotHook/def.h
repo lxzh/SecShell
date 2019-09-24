@@ -78,14 +78,31 @@
 #endif
 
 #if defined(__arm__)
+#define R_GENERIC_JUMP_SLOT R_ARM_JUMP_SLOT      //.rel.plt
+#define R_GENERIC_GLOB_DAT  R_ARM_GLOB_DAT       //.rel.dyn
+#define R_GENERIC_ABS       R_ARM_ABS32          //.rel.dyn
+#elif defined(__aarch64__)
+#define R_GENERIC_JUMP_SLOT R_AARCH64_JUMP_SLOT
+#define R_GENERIC_GLOB_DAT  R_AARCH64_GLOB_DAT
+#define R_GENERIC_ABS       R_AARCH64_ABS64
+#elif defined(__i386__)
+#define R_GENERIC_JUMP_SLOT R_386_JMP_SLOT
+#define R_GENERIC_GLOB_DAT  R_386_GLOB_DAT
+#define R_GENERIC_ABS       R_386_32
+#elif defined(__x86_64__)
+#define R_GENERIC_JUMP_SLOT R_X86_64_JUMP_SLOT
+#define R_GENERIC_GLOB_DAT  R_X86_64_GLOB_DAT
+#define R_GENERIC_ABS       R_X86_64_64
+#endif
+
+
+
+#if defined(__arm__) || defined(__i386__)
 #include <elf_arm.h>
 
-#define R_GENERIC_JUMP_SLOT R_ARM_JUMP_SLOT
-#define R_GENERIC_GLOB_DAT  R_ARM_GLOB_DAT
 #define R_GENERIC_RELATIVE  R_ARM_RELATIVE
 #define R_GENERIC_IRELATIVE R_ARM_IRELATIVE
-#define R_GENERIC_ABS       R_ARM_ABS32
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__x86_64__)
 #define R_AARCH64_IRELATIVE             1032
 
 //add by ljf start
@@ -99,11 +116,8 @@
 //#define R_AARCH64_IRELATIVE             1032
 //add by ljf end
 
-#define R_GENERIC_JUMP_SLOT R_AARCH64_JUMP_SLOT
-#define R_GENERIC_GLOB_DAT  R_AARCH64_GLOB_DAT
 #define R_GENERIC_RELATIVE  R_AARCH64_RELATIVE
 #define R_GENERIC_IRELATIVE R_AARCH64_IRELATIVE
-#define R_GENERIC_ABS       R_AARCH64_ABS64
 #endif
 
 #endif //INJECTDEMO_DEF_H

@@ -121,9 +121,9 @@ void *mem_loadDex_byte24(void *artHandle, const char *base, size_t size) {
     void *retcookie = malloc(0x78);
     memset(retcookie, 0, 0x78);
     LOGD("[+]mem_loadDex_byte24 start ->1");
-    //#define SEARCH_SYMBOL_Nougat										  _ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
+    //#define SEARCH_SYMBOL_Nougat										  _ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_
     org_artDexFileOpenMemory23 func = (org_artDexFileOpenMemory23) fake_dlsym(artHandle,
-                                                                         "_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
+                                                                         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_");
     LOGD("[+]mem_loadDex_byte dlsym OpenMemory finished");
     if (!func) {
         LOGE("[-]sdk_int:%d dlsym openMemory failed:%s", g_sdk_int, dlerror());
@@ -139,12 +139,12 @@ void *mem_loadDex_byte24(void *artHandle, const char *base, size_t size) {
 #endif
     }
     const Header *dex_header = reinterpret_cast<const Header *>(base);
+    LOGD("[+]mem_loadDex_byte24 func param(dex_header:%ull size:%lld checksum:%u)", (jlong)dex_header, size, dex_header->checksum_);
     void *value = func(retcookie, (const unsigned char *) base, size, location,
                        dex_header->checksum_, NULL, NULL, &err_msg);
     void *a = retcookie;
     //LOGD改变了retcookie？？ 所以先用a备份
-    LOGD("[+]openMemory value:%p,*(int*)retcookie:%x,*(jlong*)retcookie:%llx", value,
-         *(int *) retcookie, *(jlong *) a);
+    LOGD("[+]openMemory value:%p,*(int*)retcookie:%x,*(jlong*)retcookie:%llx", value, *(int *) retcookie, *(jlong *) a);
 
     return (void *) (*(jlong *) retcookie);
 }

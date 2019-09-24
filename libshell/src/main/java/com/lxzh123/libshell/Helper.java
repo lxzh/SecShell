@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
 public class Helper {
     private final static String TAG = "Helper";
 
-    public final static String TARGET_APK_NAME = "libcore.aar";
+    public final static String TARGET_APK_NAME = "libcore.data";
     public final static String TARGET_PKG_NAME = "com.lxzh123.libshell";
 
     static {

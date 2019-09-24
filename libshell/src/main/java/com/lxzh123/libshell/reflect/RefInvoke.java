@@ -36,9 +36,9 @@ public class RefInvoke {
         }
         try {
             Method[] methods = Class.forName(paramString1).getDeclaredMethods();
-            for (Method method : methods) {
-                Log.i(TAG, "method=" + method.toString());
-            }
+//            for (Method method : methods) {
+//                Log.i(TAG, "method=" + method.toString());
+//            }
         } catch (Exception ex) {
         }
         return null;

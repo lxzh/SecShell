@@ -33,10 +33,10 @@
 
 using namespace std;
 
-#if defined(__arm__)
+#if defined(__arm__) || defined(__i386__)
 #define LIB_ART_PATH            "/system/lib/libart.so"
 #define LIB_ART_COMPILER_PATH   "/system/lib/libart-compiler.so"
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__x86_64__)
 #define LIB_ART_PATH            "/system/lib64/libart.so"
 #define LIB_ART_COMPILER_PATH   "/system/lib64/libart-compiler.so"
 #else
@@ -45,7 +45,8 @@ using namespace std;
 
 //#define LIB_ART_PATH "/system/lib/libart.so"
 //#define LIB_ART_COMPILER_PATH "/system/lib/libart-compiler.so"
-#define JIAMI_MAGIC "libcore.aar"
+//#define JIAMI_MAGIC "libcore.jar"
+#define JIAMI_MAGIC "libcore.data"
 
 bool g_isArt = false;
 int g_sdk_int = 0;
@@ -132,7 +133,7 @@ int jniRegisterNativeMethods(JNIEnv *env, const char *className, const JNINative
 
 int registerNativeMethods(JNIEnv *env) {
     //return jniRegisterNativeMethods(env, "com/storm/StubApplication/Native", methods, sizeof(methods) / sizeof(methods[0]));
-    return jniRegisterNativeMethods(env, "com/lxzh123/libshell/Helper", methods,
+    return jniRegisterNativeMethods(env, "com/lxzh123/dexloader/DexLoader", methods,
                                     sizeof(methods) / sizeof(methods[0]));
 }
 
@@ -412,7 +413,7 @@ jobject load_dex_fromfile(JNIEnv *env, const char *inPath, const char *outPath) 
 
     jobject dexobj = env->CallStaticObjectMethod(DexFileClass, init, apk, odex, 0);
     if (env->ExceptionCheck()) {
-        LOGE("[-]loadDex %s dex failed", inPath);
+        LOGE("[-]loadDex CallStaticObjectMethod %s dex failed", inPath);
         return 0;
     }
     LOGE("[+]loadDex %s dex succeed", inPath);
@@ -496,6 +497,7 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
     sprintf(outPath, "%s/.shell/libcore.oat", g_file_dir);
     writemixdex(inPath);
     mini_dex_obj = load_dex_fromfile(env, inPath, outPath);
+//    mini_dex_obj = load_dex_fromfile(env, szDexPath, outPath);
     LOGD("[+]Start mem load dex");
     if (!g_isArt) {
         jint mCookie = mem_loadDex_dvm(env, (char *) szDexPath);
@@ -540,6 +542,7 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
                 break;
         }
         if (dex_info) {
+            LOGD("[+]Start mem load dex with art mode dex_info not null");
             unique_ptr<vector<const void *>> dex_files(new vector<const void *>());
             if (g_sdk_int == 19) {
                 cookie_field = env->GetFieldID(DexFileClass, "mCookie", "I");
@@ -561,6 +564,7 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
                 //cookie_field = env->GetFieldID(DexFileClass, "mCookie", "Ljava/lang/Object;");
                 replace_cookie_N(env, mini_dex_obj, (jlong) dex_info);
             }
+            LOGD("[+]Start mem load dex with art mode make_dex_elements");
             make_dex_elements(env, classLoader, mini_dex_obj);
             if (g_ArtHandle) dlclose(g_ArtHandle);
             return;
@@ -674,6 +678,7 @@ void native_attachBaseContext(JNIEnv *env, jobject obj, jobject ctx) {
 
     //mem loadDex
     mem_loadDex(env, ctx, shellPath);
+    LOGD("[+]native_attachBaseContext:mem_loadDex finished");
 }
 
 void init(JNIEnv *env) {

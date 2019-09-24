@@ -21,6 +21,8 @@ public class ApkLoader extends DexClassLoader {
     private Context mContext;
     private int mCookie;
     private String mDexFileName;
+    private final static String PREFFIX = "com.lxzh123.lib";
+    private final static String TARGET = "com.lxzh123.libcore.LIB";
 
     public ApkLoader(Context context, String dexPath, String optimizedDirectory, String librarySearchPath, ClassLoader parent) {
         super(dexPath, optimizedDirectory, librarySearchPath, parent);
@@ -71,7 +73,7 @@ public class ApkLoader extends DexClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        Log.d(TAG, "findClass name=" + name);
+        if(name.startsWith(PREFFIX)) Log.d(TAG, "findClass name=" + name);
 //        Class<?> clazz = null;
 //        String[] as = getClassList(mCookie);
 //        for (int i = 0; i < as.length; i++) {
@@ -130,7 +132,10 @@ public class ApkLoader extends DexClassLoader {
 
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        Log.d(TAG, "loadClass name=" + name + ", resolve=" + resolve);
+        if(name.startsWith(PREFFIX)) Log.d(TAG, "loadClass name=" + name + ", resolve=" + resolve);
+        if(TARGET.equals(name)) {
+            Log.d(TAG, "loadClass find target class to load");
+        }
         Class<?> clazz = super.loadClass(name, resolve);
         if (clazz == null) {
             Log.e(TAG, "loadClass fail, name=" + name);
