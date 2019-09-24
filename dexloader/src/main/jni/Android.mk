@@ -13,5 +13,5 @@ LOCAL_SRC_FILES += elfGotHook\elf_reader.cpp   \
 LOCAL_CFLAGS := -Wall
 # LOCAL_CFLAGS +=-fpermissive
 LOCAL_CFLAGS += -DNO_WINDOWS_BRAINDEATH -Werror-pointer-arith
-LOCAL_LDLIBS :=-llog -landroid -lbase
+LOCAL_LDLIBS :=-llog -landroid
 include $(BUILD_SHARED_LIBRARY)

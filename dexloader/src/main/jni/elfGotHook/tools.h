@@ -8,6 +8,7 @@
 #include <elf.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
+#include <string.h>
 
 #include "logger.h"
 #include "def.h"

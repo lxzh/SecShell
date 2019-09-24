@@ -88,6 +88,17 @@
 #elif defined(__aarch64__)
 #define R_AARCH64_IRELATIVE             1032
 
+//add by ljf start
+/* Dynamic relocations */
+#define R_AARCH64_COPY                  1024
+#define R_AARCH64_GLOB_DAT              1025    /* Create GOT entry.  */
+//#define R_AARCH64_JUMP_SLOT             1026    /* Create PLT entry.  */
+//#define R_AARCH64_RELATIVE              1027    /* Adjust by program base.  */
+#define R_AARCH64_TLS_TPREL64           1030
+#define R_AARCH64_TLS_DTPREL32          1031
+//#define R_AARCH64_IRELATIVE             1032
+//add by ljf end
+
 #define R_GENERIC_JUMP_SLOT R_AARCH64_JUMP_SLOT
 #define R_GENERIC_GLOB_DAT  R_AARCH64_GLOB_DAT
 #define R_GENERIC_RELATIVE  R_AARCH64_RELATIVE
