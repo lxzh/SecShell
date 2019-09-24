@@ -296,6 +296,7 @@ int ElfReader::hook(const char *func_name, void *new_func, void **old_func) {
     uint32_t symidx = 0;
     ElfW(Sym) *sym = NULL;
 
+    LOGI("ElfReader::hook func_name:%s", func_name);
     if (0 == findSymbolByName(func_name, &sym, &symidx)) {
         void *addr;
         ElfW(Xword) r_info = 0;
@@ -703,6 +704,7 @@ int ElfReader::parseDynamicSegment() {
 }
 
 int ElfReader::findSymbolByName(const char *symbol, ElfW(Sym) **sym, uint32_t *symidx) {
+    LOGI("findSymbolByName symbol:%s", symbol);
     if (this->isGNUHash) {
         if (0 == gnuLookup(symbol, sym, symidx)) {
             return 0;
@@ -754,13 +756,13 @@ int ElfReader::gnuLookup(const char *symbol, ElfW(Sym) **sym, uint32_t *symidx) 
     *sym = NULL;
     *symidx = 0;
     if ((1 & (bloom_word >> (hash % bloom_mask_bits)) & (bloom_word >> (h2 % bloom_mask_bits))) == 0) {
-        LOGE("gnuLookup: not found symbol %s in %s", symbol, this->moduleName);
+        LOGE("gnuLookup :1: not found symbol %s in %s", symbol, this->moduleName);
         return -1;
     }
 
     uint32_t n = this->gnuBucket[hash % this->gnuNBucket];
     if (n == 0) {
-        LOGE("gnuLookup: not found symbol %s in %s", symbol, this->moduleName);
+        LOGE("gnuLookup :2: not found symbol %s in %s", symbol, this->moduleName);
         return -1;
     }
 
@@ -773,7 +775,7 @@ int ElfReader::gnuLookup(const char *symbol, ElfW(Sym) **sym, uint32_t *symidx) 
         }
     } while ((this->gnuChain[n++] & 1) == 0);
 
-    LOGE("gnuLookup: not found symbol %s in %s", symbol, this->moduleName);
+    LOGE("gnuLookup :3: not found symbol %s in %s", symbol, this->moduleName);
     return -1;
 }
 

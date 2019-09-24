@@ -185,6 +185,7 @@ int extract_file(JNIEnv* env, jobject ctx, const char* dir,const char* szDexPath
 
 void* get_module_base(pid_t pid, const char* module_name)
 {
+	LOGI("[+]get_module_base start module_name:%s", module_name);
     FILE *fp;
     long addr = 0;
     char *pch;
@@ -192,16 +193,22 @@ void* get_module_base(pid_t pid, const char* module_name)
     char line[1024];
 
     if (pid < 0) {
+		LOGI("[+] get_module_base self process");
         /* self process */
         snprintf(filename, sizeof(filename), "/proc/self/maps", pid);
     } else {
+		LOGI("[+] get_module_base pid:%d", (int)pid);
         snprintf(filename, sizeof(filename), "/proc/%d/maps", pid);
     }
 
+	LOGI("[+]get_module_base fopen filename:%s", filename);
     fp = fopen(filename, "r");
+
+	LOGI("[+]get_module_base fopen filename status:%d", (fp!=NULL));
 
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
+//            LOGI("[+]get_module_base fgets line:%s", line);
             if (strstr(line, module_name)) {
                 pch = strtok( line, "-" );
                 addr = strtoull( pch, NULL, 16 );
