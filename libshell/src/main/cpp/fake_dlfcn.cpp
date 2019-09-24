@@ -25,7 +25,7 @@
 #include <android/log.h>
 #include "fake_dlfcn.h"
 
-#define TAG_NAME	"test2:fake_dlfcn"
+#define TAG_NAME	"fake_dlfcn"
 
 #define log_info(fmt,args...) __android_log_print(ANDROID_LOG_INFO, TAG_NAME, (const char *) fmt, ##args)
 #define log_err(fmt,args...) __android_log_print(ANDROID_LOG_ERROR, TAG_NAME, (const char *) fmt, ##args)

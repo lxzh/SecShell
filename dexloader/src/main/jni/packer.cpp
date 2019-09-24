@@ -255,7 +255,6 @@ void make_dex_elements(JNIEnv *env, jobject classLoader, jobject dexFileobj) {
     jobjectArray dexElement = static_cast<jobjectArray>(env->GetObjectField(pathList,
                                                                             dexElementsid));
 
-
     jint len = env->GetArrayLength(dexElement);
     LOGD("[+]Elements size:%d", len);
 
