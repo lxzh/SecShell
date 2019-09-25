@@ -13,17 +13,13 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <vector>
-//#include <bits/unique_ptr.h>
-
 
 #include "common.h"
 #include "dex_header.h"
 #include "utils.h"
 #include "byte_load.h"
-#include "hook_instance.h"
-#include "elfGotHook/tools.h"
-#include "elfGotHook/elf_reader.h"
 #include "fake_dlfcn.h"
+#include "logger.h"
 
 #define PAGE_MASK 0xfffff000
 #define PAGE_SIZE 4096
@@ -191,26 +187,6 @@ char *mmap_dex(const char *szDexPath) {
     return dexBase;
 }
 
-jstring new_obj_string(JNIEnv *env, const char *path) {
-    int len = strlen(path);
-    jclass string_clazz = env->FindClass("java/lang/String");
-    if (!env->ExceptionCheck() && string_clazz) {
-        jmethodID init = env->GetMethodID(string_clazz, "<init>", "([BLjava/lang/String;)V");
-        if (!env->ExceptionCheck() && init) {
-            jbyteArray array = env->NewByteArray(len);
-            env->SetByteArrayRegion(array, 0, len, (jbyte *) path);
-            jstring utf = env->NewStringUTF("utf-8");
-            return (jstring) env->NewObject(string_clazz, init, array, utf);
-        } else {
-            LOGE("[-]find <init> method failed");
-            return NULL;
-        }
-    } else {
-        LOGE("[-]find java/lang/String class failed");
-        return NULL;
-    }
-}
-
 jint mem_loadDex_dvm(JNIEnv *env, char *szPath) {
     LOGI("mem_loadDex_dvm");
     void (*openDexFile)(const u4 *args, union JValue *pResult);
@@ -298,18 +274,19 @@ void make_dex_elements(JNIEnv *env, jobject classLoader, jobject dexFileobj) {
     LOGD("[+]make_dex_elements finished");
 }
 
-
 //For Nougat
 void replace_cookie_N(JNIEnv *env, jobject mini_dex_obj, jlong value) {
     LOGI("replace_cookie_N");
-    jclass DexFileClass = env->FindClass(
-            "dalvik/system/DexFile");//"dalvik/system/DexPathList$Element"
+    jclass DexFileClass = env->FindClass("dalvik/system/DexFile");
     jfieldID field_mCookie;
     jobject mCookie;
 
     field_mCookie = env->GetFieldID(DexFileClass, "mCookie", "Ljava/lang/Object;");
     mCookie = env->GetObjectField(mini_dex_obj, field_mCookie);
     print_object(env, mCookie);
+
+    LOGI("[+]replace_cookie_N mini_dex_obj:%lld", (jlong)(&mini_dex_obj));
+    LOGI("[+]replace_cookie_N mCookie     :%lld", (jlong)(&mCookie));
 
     jboolean is_data_copy = 1;
     jsize array_len = env->GetArrayLength((jarray) mCookie);
@@ -378,7 +355,6 @@ void replace_cookie_N(JNIEnv *env, jobject mini_dex_obj, jlong value) {
     LOGD("[+]Nougat after replace cookie dex_base13:%8x, dex_size13:%8x", dex_base12, dex_size12);
     LOGD("[+]Nougat after replace cookie dex_base21:%8x, dex_size21:%8x", dex_base21, dex_size21);
 }
-
 
 void replace_cookie_M(JNIEnv *env, jobject mini_dex_obj, jlong value) {
     LOGI("replace_cookie_M");
@@ -487,23 +463,14 @@ jobject load_dex_fromfile(JNIEnv *env, const char *inPath, const char *outPath) 
     return dexobj;
 }
 
-void *get_lib_handle(const char *lib_path) {
-    void *handle_art = dlopen(lib_path, RTLD_NOW);
-    if (!handle_art) {
-        LOGE("[-]get %s handle failed:%s", dlerror());
-        return NULL;
-    }
-    return handle_art;
-}
-
-void *getLibartHandler(const char *libartName) {
+void *get_lib_art_handler(const char *lib_art_name) {
     void *handle_art;
     if (g_sdk_int < 23) {
         // Android L, art::JavaVMExt::AddWeakGlobalReference(art::Thread*, art::mirror::Object*)
-        handle_art = dlopen(libartName, RTLD_LAZY | RTLD_GLOBAL);
+        handle_art = dlopen(lib_art_name, RTLD_LAZY | RTLD_GLOBAL);
     } else if (g_sdk_int < 24) {
         // Android M, art::JavaVMExt::AddWeakGlobalRef(art::Thread*, art::mirror::Object*)
-        handle_art = dlopen(libartName, RTLD_LAZY | RTLD_GLOBAL);
+        handle_art = dlopen(lib_art_name, RTLD_LAZY | RTLD_GLOBAL);
     } else {
         // Android N and O, Google disallow us use dlsym;
         handle_art = fake_dlopen(LIB_ART_PATH, RTLD_NOW);
@@ -516,7 +483,6 @@ void *getLibartHandler(const char *libartName) {
     }
     return handle_art;
 }
-
 
 void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
     LOGI("mem_loadDex");
@@ -549,7 +515,7 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
         //replace cookie
         env->SetIntField(mini_dex_obj, cookie_field, mCookie);
     } else {
-        g_ArtHandle = getLibartHandler("libart.so");
+        g_ArtHandle = get_lib_art_handler("libart.so");
         LOGD("[+]Start mem load dex with art mode");
         switch (g_sdk_int) {
             //android 4.4 art mode
@@ -604,50 +570,6 @@ void mem_loadDex(JNIEnv *env, jobject ctx, const char *szDexPath) {
             }
             LOGD("[+]Start mem load dex with art mode make_dex_elements");
             make_dex_elements(env, classLoader, mini_dex_obj);
-            if (g_ArtHandle) dlclose(g_ArtHandle);
-            return;
-        } else {
-            LOGD("[+]Start mem load dex with frommaps");
-            char *buffer = get_path_frommaps(g_pkgName, (char *) ".dex", (char *) ".odex");
-            memset(inPath, 0, sizeof(inPath));
-            //memcpy(inPath,szDexPath,strlen(szDexPath));
-            memcpy(inPath, buffer, strlen(buffer));
-            sprintf(outPath, "%s/.shell/libfaked.so", g_file_dir);
-            LOGD("[+]Load fake dex inPath:%s,outPath:%s", inPath, outPath);
-
-            void *art_base = get_module_base(getpid(), LIB_ART_PATH);
-            if (!art_base) {
-                LOGE("[-]get lib %s base failed", LIB_ART_PATH);
-                return;
-            }
-            //art got hook
-            ElfReader elfReader(LIB_ART_PATH, art_base);
-            if (0 != elfReader.parse()) {
-                LOGE("failed to parse %s in %d maps at %p", LIB_ART_PATH, getpid(), art_base);
-                return;
-            }
-            elfReader.hook("open", reinterpret_cast<void *>(new_open),
-                           reinterpret_cast<void **>(&old_open));
-            elfReader.hook("read", reinterpret_cast<void *>(new_read),
-                           reinterpret_cast<void **>(&old_read));
-            elfReader.hook("mmap", reinterpret_cast<void *>(new_mmap),
-                           reinterpret_cast<void **>(&old_mmap));
-            elfReader.hook("munmap", reinterpret_cast<void *>(new_munmap),
-                           reinterpret_cast<void **>(&old_munmap));
-            elfReader.hook("__read_chk", reinterpret_cast<void *>(new_read_chk),
-                           reinterpret_cast<void **>(&old_read_chk));
-            elfReader.hook("fstat", reinterpret_cast<void *>(new_fstat),
-                           reinterpret_cast<void **>(&old_fstat));
-            elfReader.hook("fork", reinterpret_cast<void *>(new_fork),
-                           reinterpret_cast<void **>(&old_fork));
-
-            jobject faked_dex_obj = load_dex_fromfile(env, inPath, outPath);
-            //恢复fork和fstat的hook
-            elfReader.hook("fork", reinterpret_cast<void *>(old_fork),
-                           reinterpret_cast<void **>(&old_fork));
-            elfReader.hook("fstat", reinterpret_cast<void *>(old_fstat),
-                           reinterpret_cast<void **>(&old_fstat));
-            make_dex_elements(env, classLoader, faked_dex_obj);
             if (g_ArtHandle) dlclose(g_ArtHandle);
             return;
         }

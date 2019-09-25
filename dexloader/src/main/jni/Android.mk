@@ -2,11 +2,8 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := dexload
-LOCAL_C_INCLUDES +=$(LOCAL_PATH)/elfGotHook/
 
-LOCAL_SRC_FILES := packer.cpp  hook_instance.cpp byte_load.cpp utils.cpp fake_dlfcn.cpp
-LOCAL_SRC_FILES += elfGotHook/elf_reader.cpp elfGotHook/tools.cpp
-
+LOCAL_SRC_FILES := packer.cpp byte_load.cpp utils.cpp fake_dlfcn.cpp
 
 
 LOCAL_CFLAGS := -Wall

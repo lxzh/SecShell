@@ -37,12 +37,10 @@
 //#endif
 
 #if defined(__arm__) || defined(__i386__)
-#define BIT_WIDTH 32
 #define Elf_Ehdr Elf32_Ehdr
 #define Elf_Shdr Elf32_Shdr
 #define Elf_Sym  Elf32_Sym
-#elif defined(__aarch64__) || defined(__x86_64__)
-#define BIT_WIDTH 64
+#elif defined(__aarch64__) || defined(__x86_64__) || defined(__x86_64)
 #define Elf_Ehdr Elf64_Ehdr
 #define Elf_Shdr Elf64_Shdr
 #define Elf_Sym  Elf64_Sym

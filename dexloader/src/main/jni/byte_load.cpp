@@ -14,7 +14,7 @@
 #include "packer.h"
 #include "dex_header.h"
 #include "fake_dlfcn.h"
-#include "elfGotHook/logger.h"
+#include "logger.h"
 #include "utils.h"
 
 using namespace std;

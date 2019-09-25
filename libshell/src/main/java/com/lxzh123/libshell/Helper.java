@@ -3,7 +3,6 @@ package com.lxzh123.libshell;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
-import android.system.Os;
 import android.util.ArrayMap;
 
 import com.lxzh123.libshell.reflect.Reflect;
@@ -47,8 +46,6 @@ public class Helper {
                 getSourceApkLibPath(context),
                 ClassLoader.getSystemClassLoader());
         Reflect.on(wr.get()).set("mClassLoader", dLoader);
-
-//        Os.readlink("");
     }
 
     public static native int loadDex(byte[] dexBytes, long length);

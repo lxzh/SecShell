@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
-#include "elfGotHook/logger.h"
+#include "logger.h"
 
 
 unsigned int search_symbol_fromelf(char *lib_path, unsigned int lib_base_addr, char *target) {
@@ -204,7 +204,6 @@ void *get_module_base(pid_t pid, const char *module_name) {
 
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
-//            LOGI("[+]get_module_base fgets line:%s", line);
             if (strstr(line, module_name)) {
                 pch = strtok(line, "-");
                 addr = strtoull(pch, NULL, 16);
