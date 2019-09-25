@@ -76,9 +76,7 @@ int fake_dlclose(void *handle) {
 }
 
 /* flags are ignored */
-
 void *fake_dlopen(const char *libpath, int flags) {
-    log_info("Android BIT_WIDTH:%d", BIT_WIDTH);
 	FILE *maps;
 	char buff[256];
 	struct ctx *ctx = 0;

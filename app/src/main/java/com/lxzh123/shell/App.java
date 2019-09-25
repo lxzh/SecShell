@@ -4,8 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+//import com.lxzh123.classloader.Loader;
 import com.lxzh123.dexloader.DexLoader;
-import com.lxzh123.libshell.Shell;
+//import com.lxzh123.libshell.Shell;
 
 public class App extends Application {
 
@@ -16,7 +17,8 @@ public class App extends Application {
         super.attachBaseContext(base);
         try {
 //            Shell.get().init(base);
-            DexLoader.attachBaseContext(base);
+            DexLoader.init(base);
+//            Loader.init(base);
         } catch (Exception ex) {
             Log.e(TAG, "attachBaseContext Exception ex=" + ex.getMessage());
             ex.printStackTrace();
