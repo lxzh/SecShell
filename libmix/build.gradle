@@ -18,11 +18,22 @@ jar {
 
 build {
     doLast {
-        def fileName = jar.baseName + "." + jar.version + ".jar"
-        def fromFile = "./build/libs/" + fileName
-        def intoFile = "./output/"
+        def projectDir = getProjectDir().getAbsolutePath()
+        def fileName = jar.baseName + "-" + jar.version + ".jar"
+        def fromFile = projectDir +"/build/libs/" + fileName
+        def intoFile = projectDir +"/output/"
         def jarName = "libmix.jar"
+        println("fromFile:"+fromFile+" intoFile:"+intoFile)
         println(fileName)
+        println(getRootProject())
+        println(getProject())
+        println(getPath())
+        println(getParent())
+        println(getRootDir())
+        println(getBuildDir())
+        println(getName())
+        println(getDisplayName())
+        println(getProjectDir())
         copy {
             from fromFile
             into intoFile
