@@ -1,0 +1,59 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+jar {
+    //项目名，也是生成的jar的名字
+    baseName = "libmix"
+    //项目版本号，这部分内容会写进manifest
+    version = "1.0"
+    //项目的manifest定义，其中就包含最关键的入口类定义
+    manifest { attributes 'Main-Class': 'com.lxzh123.libmix.Mix' }
+}
+
+build {
+    doLast {
+        def fileName = jar.baseName + "." + jar.version + ".jar"
+        def fromFile = "./build/libs/" + fileName
+        def intoFile = "./output/"
+        def jarName = "libmix.jar"
+        println(fileName)
+        copy {
+            from fromFile
+            into intoFile
+            rename {
+                jarName
+            }
+        }
+
+        println("=====================build.doLast success.=========================")
+    }
+}
+//
+//task copyjar(dependsOn: ['packageRelease']) {
+//    doLast {
+//        def rootProjectpath = getRootDir().absolutePath
+//
+//        def fileName = "libmix-1.0.jar"
+//        def newName = "libmix.jar"
+//        def fromFile = rootProjectpath + "\\libmix\\build\\libs\\" + fileName
+//        def intoFile = rootProjectpath + "\\libmix\\output\\" + fileName
+//        // copy --> rename
+//        println("=====================build.copyjar begin.=========================" + new File(fromFile).exists())
+//        println(new File(fromFile).absolutePath)
+//        copy {
+//            from fromFile
+//            into intoFile
+//            rename {
+//                newName
+//            }
+//        }
+//        println("=====================build.copyjar end.=========================" + new File(intoFile).exists())
+//        println(new File(intoFile + fileName).absolutePath)
+//    }
+//}
