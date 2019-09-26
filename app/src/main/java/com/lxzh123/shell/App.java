@@ -9,7 +9,7 @@ import android.util.Log;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
-import com.lxzh123.classloader.Loader;
+import com.lxzh123.injector.Loader;
 //import com.lxzh123.libshell.Shell;
 
 public class App extends Application {

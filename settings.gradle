@@ -1,2 +1,2 @@
-include ':app', ':libcore', ':libshell', ':demo', ':corestub', ':dexloader', ':classloader'
+include ':app', ':libcore', ':libshell', ':demo', ':corestub', ':dexloader', ':dexinjector'
 rootProject.name='SecShell'
