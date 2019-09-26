@@ -4,12 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
-import com.lxzh123.dexloader.DexLoader;
+//import com.lxzh123.dexloader.DexLoader;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
-//import com.lxzh123.classloader.Loader;
+import com.lxzh123.classloader.Loader;
 //import com.lxzh123.libshell.Shell;
 
 public class App extends Application {
@@ -24,10 +24,10 @@ public class App extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         try {
-            printDexFile(base);
+//            printDexFile(base);
 //            Shell.get().init(base);
-            DexLoader.init(base);
-//            Loader.init(base);
+//            DexLoader.init(base);
+            Loader.init(base);
         } catch (Exception ex) {
             Log.e(TAG, "attachBaseContext Exception ex=" + ex.getMessage());
             ex.printStackTrace();

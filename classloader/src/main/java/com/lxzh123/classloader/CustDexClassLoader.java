@@ -33,8 +33,8 @@ import java.util.List;
  * Base class for common functionality between various dex-based
  * {@link ClassLoader} implementations.
  */
-public class BaseDexClassLoader extends ClassLoader {
-    private final static String TAG = "BaseDexClassLoader";
+public class CustDexClassLoader extends ClassLoader {
+    private final static String TAG = "CustDexClassLoader";
 
 //    /**
 //     * Hook for customizing how dex files loads are reported.
@@ -43,9 +43,9 @@ public class BaseDexClassLoader extends ClassLoader {
 //     * goal is to simplify the mechanism for optimizing foreign dex files and
 //     * enable further optimizations of secondary dex files.
 //     * <p>
-//     * The reporting happens only when new instances of BaseDexClassLoader
+//     * The reporting happens only when new instances of CustDexClassLoader
 //     * are constructed and will be active only after this field is set with
-//     * {@link BaseDexClassLoader#setReporter}.
+//     * {@link CustDexClassLoader#setReporter}.
 //     */
 //    /* @NonNull */ private static volatile Object reporter = null;
 
@@ -82,37 +82,37 @@ public class BaseDexClassLoader extends ClassLoader {
      * @param parent            the parent class loader
      * @hide
      */
-    public BaseDexClassLoader(ByteBuffer[] dexFiles, String librarySearchPath, ClassLoader parent) {
+    public CustDexClassLoader(ByteBuffer[] dexFiles, String librarySearchPath, ClassLoader parent) {
         super(parent);
-        Log.d(TAG, "BaseDexClassLoader");
+        Log.d(TAG, "CustDexClassLoader");
         this.sharedLibraryLoaders = null;
         try {
-            Log.d(TAG, "BaseDexClassLoader classloader:" + parent);
+            Log.d(TAG, "CustDexClassLoader classloader:" + parent);
             Class<?> DexPathListClass = Class.forName("dalvik.system.DexPathList");
 //            ReporterClass = Class.forName("dalvik.system.DexPathList$Reporter");
             Constructor<?> constructor = DexPathListClass.getConstructor(ClassLoader.class, String.class);
             this.pathList = constructor.newInstance(this, librarySearchPath);
-            Log.d(TAG, "BaseDexClassLoader pathList:" + pathList.toString());
+            Log.d(TAG, "CustDexClassLoader pathList:" + pathList.toString());
 
             Class<?> PathClassLoaderClass = parent.getClass();
-            Log.d(TAG, "BaseDexClassLoader PathClassLoaderClass:" + PathClassLoaderClass.toString());
+            Log.d(TAG, "CustDexClassLoader PathClassLoaderClass:" + PathClassLoaderClass.toString());
             Class<?> OriginBaseClassLoaderClass = parent.getClass().getSuperclass();
-            Log.d(TAG, "BaseDexClassLoader OriginBaseClassLoaderClass:" + OriginBaseClassLoaderClass.toString());
+            Log.d(TAG, "CustDexClassLoader OriginBaseClassLoaderClass:" + OriginBaseClassLoaderClass.toString());
             Field pathListField = OriginBaseClassLoaderClass.getDeclaredField("pathList");
 
             pathListField.setAccessible(true);
             Object oldPathList = pathListField.get(parent);
-            Log.d(TAG, "BaseDexClassLoader oldPathList:" + oldPathList.toString());
+            Log.d(TAG, "CustDexClassLoader oldPathList:" + oldPathList.toString());
 
             Field dexElementsField = DexPathListClass.getDeclaredField("dexElements");
-            Log.d(TAG, "BaseDexClassLoader dexElementsField:" + dexElementsField.toString());
+            Log.d(TAG, "CustDexClassLoader dexElementsField:" + dexElementsField.toString());
             dexElementsField.setAccessible(true);
             Object oldDexElements = dexElementsField.get(oldPathList);
-            Log.d(TAG, "BaseDexClassLoader oldDexElements:" + oldDexElements.toString());
+            Log.d(TAG, "CustDexClassLoader oldDexElements:" + oldDexElements.toString());
 
             Class<?> ElementClass = Class.forName("dalvik.system.DexPathList$Element");
             Class<?> ElementArrayClass = oldDexElements.getClass();
-            Log.d(TAG, "BaseDexClassLoader ElementArrayClass:" + ElementArrayClass.toString());
+            Log.d(TAG, "CustDexClassLoader ElementArrayClass:" + ElementArrayClass.toString());
 
             int elementLen = Array.getLength(oldDexElements);
             Object newDexElements = Array.newInstance(ElementClass, elementLen + 1);
@@ -122,7 +122,7 @@ public class BaseDexClassLoader extends ClassLoader {
 
 //            Object[] null_elements = null;
 //            Class<?> DexFileClass = Class.forName("dalvik.system.DexFile");
-//            Log.d(TAG, "BaseDexClassLoader DexFileClass:" + DexFileClass.toString());
+//            Log.d(TAG, "CustDexClassLoader DexFileClass:" + DexFileClass.toString());
 //            for (Constructor constructor : DexFileClass.getDeclaredConstructors()) {
 //                Log.d(TAG, "Constructor : " + constructor.toString());
 //            }
@@ -130,7 +130,7 @@ public class BaseDexClassLoader extends ClassLoader {
 //                Log.d(TAG, "method : " + method.toString());
 //            }
 //            Constructor<?> DexFileConstructor = DexFileClass.getConstructor(ByteBuffer[].class, ClassLoader.class, ElementArrayClass);
-//            Log.d(TAG, "BaseDexClassLoader DexFileConstructor:" + DexFileConstructor.toString());
+//            Log.d(TAG, "CustDexClassLoader DexFileConstructor:" + DexFileConstructor.toString());
 
 //            DexFile dex = new DexFile(dexFiles, this, null_elements);
 //            // Capture class loader context from *before* `dexElements` is set (see comment below).
@@ -145,7 +145,7 @@ public class BaseDexClassLoader extends ClassLoader {
             findResourcesMethod = DexPathListClass.getMethod("findResources", String.class);
             findLibraryMethod = DexPathListClass.getMethod("findLibrary", String.class);
         } catch (Exception ex) {
-            Log.e(TAG, "BaseDexClassLoader Exception:" + ex.toString());
+            Log.e(TAG, "CustDexClassLoader Exception:" + ex.toString());
             ex.printStackTrace();
         }
     }
@@ -311,7 +311,7 @@ public class BaseDexClassLoader extends ClassLoader {
 //
 //    /**
 //     * Sets the reporter for dex load notifications.
-//     * Once set, all new instances of BaseDexClassLoader will report upon
+//     * Once set, all new instances of CustDexClassLoader will report upon
 //     * constructions the loaded dex files.
 //     *
 //     * @param newReporter the new Reporter. Setting null will cancel reporting.

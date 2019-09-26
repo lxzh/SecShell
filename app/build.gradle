@@ -58,5 +58,5 @@ dependencies {
     compileOnly project(':libcore')
 //    implementation project(':libshell')
     implementation project(':dexloader')
-//    implementation project(':classloader')
+    implementation project(':classloader')
 }

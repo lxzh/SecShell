@@ -1,4 +1,5 @@
 #include "utils.h"
+
 #include <jni.h>
 #include <dlfcn.h>
 #include <android/asset_manager.h>
