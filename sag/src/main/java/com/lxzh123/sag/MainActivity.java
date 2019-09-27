@@ -3,7 +3,6 @@ package com.lxzh123.sag;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PermissionInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 
 import dalvik.system.DexClassLoader;
 
@@ -64,11 +64,14 @@ public class MainActivity extends Activity {
                 super.run();
 //                String outPath = getFilesDir().getAbsolutePath();
                 String outPath = Environment.getExternalStorageDirectory().toString() + File.separator + "sag";
-                String fileName = copyAssetsData(getApplicationContext(), "classes.jar", "classes.jar", outPath);
+                String dexName = copyAssetsData(getApplicationContext(), "classes.dex", "classes.dex", outPath);
+                String jarName = copyAssetsData(getApplicationContext(), "classes.jar", "classes.jar", outPath);
                 String optDir = getDir("dex", 0).getAbsolutePath();
-                Log.d(TAG, "generateSdkApi:outPath=" + outPath + " fileName=" + fileName + " optDir=" + optDir);
-                DexClassLoader classLoader = new DexClassLoader(fileName, optDir, null, getBaseContext().getClassLoader());
-                Sag.generateSdkApi(outPath, fileName, classLoader);
+                Log.d(TAG, "generateSdkApi:outPath=" + outPath + " jarName=" + jarName + " dexName=" + dexName + " optDir=" + optDir);
+                DexClassLoader classLoader = new DexClassLoader(dexName, optDir, null, getBaseContext().getClassLoader());
+                Sag.generateSdkApi(outPath, jarName, classLoader);
+
+                Method method = null;
             }
         }.start();
     }

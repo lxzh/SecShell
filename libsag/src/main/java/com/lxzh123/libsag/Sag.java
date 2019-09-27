@@ -1,21 +1,18 @@
 package com.lxzh123.libsag;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -58,7 +55,7 @@ public class Sag {
 //                System.out.println(Arrays.toString(list.get(i)));
 //            }
 //        }
-        //Í¨¹ıURLClassLoader.loadClass·½·¨µÃµ½¾ßÌåÄ³¸öÀà
+        //é€šè¿‡URLClassLoader.loadClassæ–¹æ³•å¾—åˆ°å…·ä½“æŸä¸ªç±»
         URL url = null;
         try {
             url = new URL("file:" + filepath);
@@ -88,59 +85,10 @@ public class Sag {
         }
     }
 
-    private static List<String[]> getJarMethod(String jarFile) throws Exception {
-        String NORMAL_METHOD = "waitequalsnotifynotifyAlltoStringhashCodegetClass";
-        List<String[]> a = new ArrayList<>();
-        try {
-            //Í¨¹ıjarFile ºÍJarEntryµÃµ½ËùÓĞµÄÀà
-            JarFile jar = new JarFile(jarFile);//"D:/sip-test.jar"
-            Enumeration e = jar.entries();
-            while (e.hasMoreElements()) {
-                JarEntry entry = (JarEntry) e.nextElement();
-                //entry.getMethod()
-                if (entry.getName().indexOf("META-INF") < 0) {
-                    String sName = entry.getName();
-                    String substr[] = sName.split("/");
-                    String pName = "";
-                    for (int i = 0; i < substr.length - 1; i++) {
-                        if (i > 0)
-                            pName = pName + "/" + substr[i];
-                        else
-                            pName = substr[i];
-                    }
-                    if (sName.indexOf(".class") < 0) {
-                        sName = sName.substring(0, sName.length() - 1);
-                    } else {
-                        //Í¨¹ıURLClassLoader.loadClass·½·¨µÃµ½¾ßÌåÄ³¸öÀà
-                        URL url1 = new URL("file:" + jarFile);
-                        URLClassLoader myClassLoader = new URLClassLoader(new URL[]{url1}, Thread.currentThread().getContextClassLoader());
-                        String ppName = sName.replace("/", ".").replace(".class", "");
-                        Class myClass = myClassLoader.loadClass(ppName);
-                        //Í¨¹ıgetMethodsµÃµ½ÀàÖĞ°üº¬µÄ·½·¨
-                        Method m[] = myClass.getMethods();
-                        for (int i = 0; i < m.length; i++) {
-                            String sm = m[i].getName();
-                            if (NORMAL_METHOD.indexOf(sm) < 0) {
-                                String[] c = {sm, sName};
-                                a.add(c);
-                            }
-                        }
-                    }
-                    String[] b = {sName, pName};
-                    a.add(b);
-                }
-            }
-            return a;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return a;
-    }
-
     private static List<String[]> getApiMethod(String jarFile, String folder, ClassLoader classLoader) throws Exception {
         List<String[]> a = new ArrayList<>();
         try {
-            //Í¨¹ıjarFile ºÍJarEntryµÃµ½ËùÓĞµÄÀà
+            //é€šè¿‡jarFile å’ŒJarEntryå¾—åˆ°æ‰€æœ‰çš„ç±»
             JarFile jar = new JarFile(jarFile);//"D:/sip-test.jar"
             Enumeration e = jar.entries();
             while (e.hasMoreElements()) {
@@ -167,25 +115,25 @@ public class Sag {
                         String fileName = exportJavaInfo(myClass, buffer, folder);
                         writeBufferToFile(buffer, fileName);
 
-                        //Í¨¹ıgetMethodsµÃµ½ÀàÖĞ°üº¬µÄ·½·¨
+                        //é€šè¿‡getMethodså¾—åˆ°ç±»ä¸­åŒ…å«çš„æ–¹æ³•
                         Method m[] = myClass.getMethods();
                         if (m.length > 0) {
-                            System.out.println(myClass.toString() + " " + myClass.getTypeName() + " " + Modifier.toString(myClass.getModifiers()));
-                            System.out.println((myClass.isInterface() ? "interface" : "class") + " " + myClass.getPackage().getName() + " " + myClass.getSimpleName() + " " + Modifier.toString(myClass.getModifiers()));
+                            System.out.println("class1:" + myClass.toString() + " " + myClass.getName() + " " + Modifier.toString(myClass.getModifiers()));
+                            System.out.println("class2:" + (myClass.isInterface() ? "interface" : "class") + " " + myClass.getPackage().getName() + " " + myClass.getSimpleName() + " " + Modifier.toString(myClass.getModifiers()));
 
                         }
                         for (int i = 0; i < m.length; i++) {
                             Method method = m[i];
                             String sm = method.getName();
                             if (NORMAL_METHOD.indexOf(sm) < 0) {
-                                System.out.println("method " + method.getName() + " " + Modifier.toString(method.getModifiers()));
+                                System.out.println("method:" + method.getName() + " " + Modifier.toString(method.getModifiers()));
                                 String[] c = {sm, sName};
                                 a.add(c);
-                                Parameter[] parameters = method.getParameters();
-                                int len = parameters.length;
+                                Class[] classes = method.getParameterTypes();
+                                int len = classes.length;
                                 for (int j = 0; j < len; j++) {
-                                    Parameter parameter = parameters[j];
-                                    System.out.println("parameter " + parameter.toString());
+                                    Class parameter = classes[j];
+                                    System.out.println("parameter:" + parameter.toString() + "");
                                 }
                             }
                         }
@@ -199,53 +147,6 @@ public class Sag {
             e.printStackTrace();
         }
         return a;
-    }
-
-    /**
-     * ÒÔjarµÄĞÎÊ½À´»ñÈ¡°üÏÂµÄËùÓĞClass
-     *
-     * @param packageName
-     * @param entries
-     * @param packageDirName
-     * @param recursive
-     * @param classes
-     */
-    private static void findClassesInPackageByJar(String packageName, Enumeration<JarEntry> entries, String packageDirName, final boolean recursive, Set<Class<?>> classes) {
-        // Í¬ÑùµÄ½øĞĞÑ­»·µü´ú
-        while (entries.hasMoreElements()) {
-            // »ñÈ¡jarÀïµÄÒ»¸öÊµÌå ¿ÉÒÔÊÇÄ¿Â¼ ºÍÒ»Ğ©jar°üÀïµÄÆäËûÎÄ¼ş ÈçMETA-INFµÈÎÄ¼ş
-            JarEntry entry = entries.nextElement();
-            String name = entry.getName();
-            // Èç¹ûÊÇÒÔ/¿ªÍ·µÄ
-            if (name.charAt(0) == '/') {
-                // »ñÈ¡ºóÃæµÄ×Ö·û´®
-                name = name.substring(1);
-            }
-            // Èç¹ûÇ°°ë²¿·ÖºÍ¶¨ÒåµÄ°üÃûÏàÍ¬
-            if (name.startsWith(packageDirName)) {
-                int idx = name.lastIndexOf('/');
-                // Èç¹ûÒÔ"/"½áÎ² ÊÇÒ»¸ö°ü
-                if (idx != -1) {
-                    // »ñÈ¡°üÃû °Ñ"/"Ìæ»»³É"."
-                    packageName = name.substring(0, idx).replace('/', '.');
-                }
-                // Èç¹û¿ÉÒÔµü´úÏÂÈ¥ ²¢ÇÒÊÇÒ»¸ö°ü
-                if ((idx != -1) || recursive) {
-                    // Èç¹ûÊÇÒ»¸ö.classÎÄ¼ş ¶øÇÒ²»ÊÇÄ¿Â¼
-                    if (name.endsWith(".class") && !entry.isDirectory()) {
-                        // È¥µôºóÃæµÄ".class" »ñÈ¡ÕæÕıµÄÀàÃû
-                        String className = name.substring(packageName.length() + 1, name.length() - 6);
-                        try {
-                            // Ìí¼Óµ½classes
-                            classes.add(Class.forName(packageName + '.' + className));
-                        } catch (ClassNotFoundException e) {
-                            // .error("Ìí¼ÓÓÃ»§×Ô¶¨ÒåÊÓÍ¼Àà´íÎó ÕÒ²»µ½´ËÀàµÄ.classÎÄ¼ş");
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private static String exportJavaInfo(Class clz, StringBuffer strBuffer, String rootPath) {
@@ -314,18 +215,8 @@ public class Sag {
                         field.getType().getName() + " " + field.getName());
                 if (Modifier.isStatic(field.getModifiers())) {
                     try {
-                        field.setAccessible(true);
-                        Object object = field.get(null);
-                        System.out.println();
-                        String value = null;
-                        if (object != null) {
-                            value = object.toString();
-                        }
-                        if (value != null) {
-                            value = getDefaultValue(field.getType().getName());
-                        }
-                        strBuffer.append(" = " + value);
-                        System.out.println("===" + field + " = " + value);
+                        strBuffer.append(" = " + getDefaultValue(field.getType().getName()));
+                        System.out.println("===" + field + " = " + getDefaultValue(field.getType().getName()));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -351,11 +242,13 @@ public class Sag {
             strBuffer.append(TAB + (clz.isInterface() || clz.isAnnotation() ? "" :
                     Modifier.toString(method.getModifiers())) + " " +
                     rtnTypeName + " " + method.getName() + "(");
-            Parameter[] parameters = method.getParameters();
+//            Parameter[] parameters = method.getParameters();
+            Class[] parameters = method.getParameterTypes();
             int len = parameters.length;
             for (int j = 0; j < len; j++) {
-                Parameter parameter = parameters[j];
-                strBuffer.append(parameter.getType().getName() + " " + parameter.getName());
+//                Parameter parameter = parameters[j];
+                Class parameter = parameters[j];
+                strBuffer.append(parameter.getName() + " arg" + j);
                 if (j < len - 1) {
                     strBuffer.append(", ");
                 }
