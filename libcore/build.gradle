@@ -17,16 +17,14 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles.add(file("proguard-rules.txt"))
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable = true
             jniDebuggable = true
             renderscriptDebuggable = true
         }
         debug {
             minifyEnabled false
-            proguardFiles.add(file("proguard-rules.txt"))
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable = true
             jniDebuggable = true
         }
@@ -41,4 +39,51 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+task cleanbuild(){
+    if (getBuildDir().exists()){
+        println "============clean build dir "+getBuildDir().absolutePath
+        delete getBuildDir().absolutePath
+    }
+}
+//
+////
+//task copyjar(dependsOn:[':libmix:copyjar','fatJar']) {
+//    doLast {
+//        def rootProjectpath = getRootDir().absolutePath
+//        def fileName = "dydexencry.jar"
+//        def fromFile = rootProjectpath + "\\dydexencry\\build\\libs\\" + fileName
+//        def intoFile = rootProjectpath + "\\pythonlaunch\\src\\main\\python"
+//        // copy --> rename
+//        println("=====================build.copyjar begin.=========================" + new File(fromFile).exists())
+//        println(new File(fromFile).absolutePath)
+//        copy {
+//            from fromFile
+//            into intoFile
+//            rename {
+//                "petershell.jar"
+//            }
+//        }
+//        println("=====================build.copyjar end.=========================" + new File(intoFile + "\\petershell.jar").exists())
+//        println(new File(intoFile + "\\petershell.jar").absolutePath)
+//    }
+//}
+//
+//task exec(dependsOn: [':dydexencry:copyjar',':app:copyapk']){
+//    doLast {
+//        println("begin to exec command===========================")
+//        def rootpath = getRootDir().absolutePath;
+//        def pyfile = rootpath + "\\pythonlaunch\\src\\main\\python\\addshell.py"
+//        def sourceapk = rootpath + "\\pythonlaunch\\src\\main\\python\\demo.apk"
+//        def dirDir = rootpath + "\\pythonlaunch\\src\\main\\python\\d"
+//        def command = "python  " + pyfile + " -s " + sourceapk + " -o " + dirDir + " -n de.apk"
+//
+//        println(command)
+//        command.execute()
+//    }
+//}
+
+task aarRelease(type: Copy) {
+    println rootProject.rootDir
 }

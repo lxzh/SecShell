@@ -7,7 +7,6 @@
 
 #include <jni.h>
 #include <stdlib.h>
-#include <string>
 
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 

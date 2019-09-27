@@ -4,9 +4,8 @@
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
-#include <string>
+#include <string.h>
 #include <errno.h>
-#include <cstdlib>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -173,29 +172,24 @@ void init(JNIEnv *env) {
 
     g_sdk_int = env->GetStaticIntField(jclazz, SDK_INT);
     LOGD("[+] sdk_int:%d", g_sdk_int);
-    if (g_sdk_int > 13) {
-        jclass System = env->FindClass("java/lang/System");
-        jmethodID System_getProperty = env->GetStaticMethodID(System, "getProperty",
-                                                              "(Ljava/lang/String;)Ljava/lang/String;");
+    jclass System = env->FindClass("java/lang/System");
+    jmethodID System_getProperty = env->GetStaticMethodID(System, "getProperty",
+                                                          "(Ljava/lang/String;)Ljava/lang/String;");
 
-        jstring vm_version_name = env->NewStringUTF("java.vm.version");
-        jstring vm_version_value = (jstring) (env->CallStaticObjectMethod(System,
-                                                                          System_getProperty,
-                                                                          vm_version_name));
+    jstring vm_version_name = env->NewStringUTF("java.vm.version");
+    jstring vm_version_value = (jstring) (env->CallStaticObjectMethod(System,
+                                                                      System_getProperty,
+                                                                      vm_version_name));
 
-        char *cvm_version_value = (char *) env->GetStringUTFChars(vm_version_value, NULL);
-        double version = atof(cvm_version_value);
-        g_isArt = version >= 2 ? true : false;
-        LOGD("[+] Android VmVersion:%f", version);
+    char *cvm_version_value = (char *) env->GetStringUTFChars(vm_version_value, NULL);
+    double version = atof(cvm_version_value);
+    g_isArt = version >= 2 ? true : false;
+    LOGD("[+] Android VmVersion:%f", version);
 
-        env->ReleaseStringUTFChars(vm_version_value, cvm_version_value);
-        env->DeleteLocalRef(System);
-        env->DeleteLocalRef(vm_version_name);
-        env->DeleteLocalRef(vm_version_value);
-    } else {
-        LOGE("[-] unsupported Android version");
-        assert(false);
-    }
+    env->ReleaseStringUTFChars(vm_version_value, cvm_version_value);
+    env->DeleteLocalRef(System);
+    env->DeleteLocalRef(vm_version_name);
+    env->DeleteLocalRef(vm_version_value);
     jniRegisterNativeMethods(env, JNIREG_CLASS, gMethods, NELEM(gMethods));
     env->DeleteLocalRef(jclazz);
 }

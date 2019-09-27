@@ -16,11 +16,9 @@ android {
 
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++14 -frtti -fexceptions"
-//                arguments "-DANDROID_TOOLCHAIN=clang"
-//                cppFlags "-std=c++14 -frtti -fexceptions"
-                arguments '-DANDROID_PLATFORM=android-29',
-                        '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=c++_shared'
+                cppFlags "-std=c++11 -fno-rtti -fno-exceptions"
+                arguments '-DANDROID_PLATFORM=android-16',
+                        '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=none'
                 abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
             }
         }
