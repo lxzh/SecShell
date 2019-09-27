@@ -34,6 +34,12 @@ public class App extends Application {
         }
     }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        Log.d(TAG, "onTerminate");
+    }
+
     private void printDexFile(Context context) {
         try {
             ClassLoader parent = context.getClassLoader();

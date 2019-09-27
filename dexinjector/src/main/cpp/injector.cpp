@@ -56,8 +56,9 @@ JNIEXPORT jstring JNICALL Helper_init
             LOGE("[-]mkdir %s error:%s", g_priv_dir, strerror(errno));
         }
     }
+    LOGD("[+] start extract_file_and_decrypt");
     //从assets目录提取加密dex
-    extract_file(env, ctx, priv_path, DAT_NAME);
+    extract_file_and_decrypt(env, ctx, priv_path, DAT_NAME);
     if (injectDex) {
         inject_dex(env, ctx, priv_path);
     }
@@ -205,5 +206,5 @@ JNIEXPORT int JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 }
 
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
-
+    LOGI("[+] JNI_OnUnload");
 }

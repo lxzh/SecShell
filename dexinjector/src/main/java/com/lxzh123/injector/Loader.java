@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -26,6 +27,11 @@ public class Loader {
     private final static String TAG = "Loader";
 
     public final static String ASSETS_RES_NAME = "libcore.data";
+    /**
+     * can't load non optimization jar package, so a classes.jar in aar package need to convert to
+     * dex package with dx tool in android sdk : dx --dex --output=target.dex classes.jar
+     * or d2j-jar2dex.bat: d2j-jar2dex.bat classes.jar -o target.dex
+     */
     public final static String TARGET_DEX_NAME = "libcore.dex";
 
     public final static int SDK_VERSION = Build.VERSION.SDK_INT;
@@ -46,10 +52,10 @@ public class Loader {
         boolean injectInJni = true;
 
         String path = prepare(context, initInJni, injectInJni);
+//        testLoadJar(context, path);
         if(!injectInJni) {
             injectDex(context, path);
         }
-//
 //
 //        Object currentActivityThread = ActivityThreadCompat.instance();
 //        String packageName = context.getPackageName();//当前apk的包名
@@ -183,5 +189,21 @@ public class Loader {
         Log.d(TAG, "classLoader super:" + dexPathClassLoader);
     }
 
+    private static void testLoadJar(Context context, String jarPath) {
+        Log.d(TAG, "testLoadJar");
+        File optDir = context.getDir("dex", 0);
+        DexClassLoader dexClassLoader = new DexClassLoader(jarPath, optDir.getAbsolutePath(), null, context.getClassLoader());
+        try {
+            Class<?> LIB = dexClassLoader.loadClass("com.lxzh123.libcore.LIB");
+            Method getMethod = LIB.getDeclaredMethod("get");
+            Method squareMethod = LIB.getDeclaredMethod("square", int.class);
+            Object obj = getMethod.invoke(LIB);
+            int rst = (Integer) squareMethod.invoke(obj, 5);
+            Log.d(TAG, "testLoadJar rst:" + rst);
+        }catch (Exception ex) {
+            Log.d(TAG, "testLoadJar Exception:" + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
 
 }

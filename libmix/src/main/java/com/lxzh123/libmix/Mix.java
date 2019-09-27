@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Mix {
-
     private static final int ARGC = 5;
     private static final String EN_CMD = "-en";
     private static final String DE_CMD = "-de";
@@ -49,16 +48,20 @@ public class Mix {
         }
     }
 
-    private static boolean isNullOrEmpty(String str) {
-        return (str == null || "".equals(str));
-    }
-
+    /**
+     * print usage of this tool
+     */
     private static void printUsage() {
         System.out.println("encrypt: java -jar -en -s $srcFile -d $dstFile");
         System.out.println("decrypt: java -jar -de -s $srcFile -d $dstFile");
         System.out.println("compare: java -jar -cm -s $srcFile -d $dstFile");
     }
 
+    /**
+     * do encrypt of the source file, output to the destination file
+     * @param srcFile
+     * @param dstFile
+     */
     private static void doEncrypt(String srcFile, String dstFile) {
         File inFile = new File(srcFile);
         File ouFile = new File(dstFile);
@@ -78,24 +81,16 @@ public class Mix {
             while ((size = inputStream.read(buffer)) > 0) {
                 if (size % 2 != 0) {
                     max = size - 1;
+                    buffer[max] = (byte) (buffer[max] ^ MASK);
                 } else {
                     max = size;
                 }
                 byte l, r;
-                for (int i = 0; i < size; i++) {
-                    System.out.print(String.format("%2x ", buffer[i]));
-                }
-                System.out.print("\nsize:" + size + " ");
                 for (int i = 0; i < max; i += 2) {
                     l = (byte) (buffer[i] ^ MASK);
                     r = (byte) (buffer[i + 1] ^ MASK);
                     buffer[i] = r;
                     buffer[i + 1] = l;
-                    System.out.print(i + " ");
-                }
-                System.out.println("");
-                for (int i = 0; i < size; i++) {
-                    System.out.print(String.format("%2x ", buffer[i]));
                 }
                 outputStream.write(buffer, 0, size);
             }
@@ -121,6 +116,11 @@ public class Mix {
         }
     }
 
+    /**
+     * do decrypt of the source file, output to the destination file
+     * @param srcFile
+     * @param dstFile
+     */
     private static void doDecrypt(String srcFile, String dstFile) {
         File inFile = new File(srcFile);
         File ouFile = new File(dstFile);
@@ -140,24 +140,16 @@ public class Mix {
             while ((size = inputStream.read(buffer)) > 0) {
                 if (size % 2 != 0) {
                     max = size - 1;
+                    buffer[max] = (byte) (buffer[max] ^ MASK);
                 } else {
                     max = size;
                 }
                 byte l, r;
-                for (int i = 0; i < size; i++) {
-                    System.out.print(String.format("%2x ", buffer[i]));
-                }
-                System.out.print("\nsize:" + size + " ");
                 for (int i = 0; i < max; i += 2) {
                     l = (byte) (buffer[i] ^ MASK);
                     r = (byte) (buffer[i + 1] ^ MASK);
                     buffer[i] = r;
                     buffer[i + 1] = l;
-                    System.out.print(i + " ");
-                }
-                System.out.println("");
-                for (int i = 0; i < size; i++) {
-                    System.out.print(String.format("%2x ", buffer[i]));
                 }
                 outputStream.write(buffer, 0, size);
             }
@@ -183,6 +175,11 @@ public class Mix {
         }
     }
 
+    /**
+     * compare two file in binary mode for each byte
+     * @param fileOne
+     * @param fileTwo
+     */
     private static void doCompare(String fileOne, String fileTwo) {
         File inFile1 = new File(fileOne);
         File inFile2 = new File(fileTwo);
@@ -204,6 +201,7 @@ public class Mix {
             int len1 = inputStream1.available();
             int len2 = inputStream2.available();
             if (len1 != len2) {
+                isEqual = false;
                 System.out.println("Not equal: size of fileOne:" + len1 + " size of fileTwo:" + len2);
             } else {
                 byte[] buffer1 = new byte[1024];

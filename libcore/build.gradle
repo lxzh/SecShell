@@ -4,7 +4,6 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
 
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
@@ -47,6 +46,70 @@ task cleanbuild(){
         delete getBuildDir().absolutePath
     }
 }
+
+build {
+    doLast {
+        def projectDir = getProjectDir().getAbsolutePath()
+        def releaseName = projectDir + "/build/outputs/libcore-release.aar"
+        def debugName = projectDir + "/build/outputs/libcore-debug.aar"
+        def fromFile = projectDir +"/build/outputs/" + releaseName
+        def intoFile = projectDir +"/output/"
+        def jarName = "libmix.jar"
+        println("=====================build.doLast start.=========================")
+        println(getName())
+        println(getOwner())
+        println(getDisplayName())
+        println(getDescription())
+        println(gradle.startParameter.taskNames)
+        println(build.declaredFields)
+        copy {
+            from fromFile
+            into intoFile
+            rename {
+                jarName
+            }
+        }
+
+        println("=====================build.doLast success.=========================")
+    }
+}
+
+//tasks.whenTaskAdded { task ->
+//    if (task.name.equalsIgnoreCase("assembleRelease")) {
+//        // 如果是assembleRelease任务，在最后执行导出apk以及mapping目录到指定目录
+//        task.doLast {
+//            outputReleaseFile()
+//        }
+//    }
+//}
+//
+//void outputReleaseFile() {
+////    android.libraryVariant.a
+//    android.applicationVariants.all { variant ->
+//        // 如果是正式版打包
+//        if (variant.name.equalsIgnoreCase("release")) {
+//            File outputPath = new File("$rootDir" + File.separator + "release_app" + File.separator
+//                    + android.defaultConfig.versionName)
+//            println(variant.outputs[0].outputFile)
+//            println(String.format('拷贝生成文件到指定目录[%s]', outputPath.getAbsolutePath()))
+//            // 拷贝apk文件
+//            copy {
+//                from variant.outputs[0].outputFile
+//                into outputPath
+//                // 重命名导出名称
+//                rename {
+//                    'account_system' + variant.name + '_' + android.defaultConfig.versionName + ".apk"
+//                }
+//            }
+//
+//            // 拷贝mapping目录
+//            copy {
+//                from variant.mappingFile.getParentFile()
+//                into new File(outputPath, 'mapping')
+//            }
+//        }
+//    }
+//}
 //
 ////
 //task copyjar(dependsOn:[':libmix:copyjar','fatJar']) {

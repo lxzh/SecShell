@@ -34,6 +34,11 @@ build {
         println(getName())
         println(getDisplayName())
         println(getProjectDir())
+        def applicationId = android.defaultConfig.applicationId
+        def versionName = android.defaultConfig.versionName
+        def time = new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
+        def buildType = "release"
+        def channel = "site"
         copy {
             from fromFile
             into intoFile

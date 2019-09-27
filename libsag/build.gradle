@@ -1,0 +1,40 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+jar {
+    //项目名，也是生成的jar的名字
+    baseName = "libsag"
+    //项目版本号，这部分内容会写进manifest
+    version = "1.0"
+    //项目的manifest定义，其中就包含最关键的入口类定义
+    manifest { attributes 'Main-Class': 'com.lxzh123.libsag.Sag' }
+}
+
+build {
+    doLast {
+        def projectDir = getProjectDir().getAbsolutePath()
+        def fileName = jar.baseName + "-" + jar.version + ".jar"
+        def fromFile = projectDir +"/build/libs/" + fileName
+        def intoFile = projectDir +"/output/"
+        def jarName = "libsag.jar"
+        println("=====================build.doLast start.=========================")
+        copy {
+            from fromFile
+            into intoFile
+            rename {
+                jarName
+            }
+        }
+        def outJar = intoFile + jarName
+        def cmdInputJar = intoFile + "libcore.jar"
+        //on windows:
+//        commandLine 'java', '-jar', outJar, cmdInputJar
+        println("=====================build.doLast success.=========================")
+    }
+}
