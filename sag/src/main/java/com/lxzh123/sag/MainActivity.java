@@ -30,16 +30,19 @@ public class MainActivity extends Activity {
     private final static String[] PERMISSIONS = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private final static int requestPermissionCode = 1000;
 
-    private boolean hasWriteSDCardPermission = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        requestPermissions(PERMISSIONS, requestPermissionCode);
+//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+//            requestPermissions(PERMISSIONS, requestPermissionCode);
+//        } else {
+//            AlertDialog.Builder builder = new A
+//        }
+        checkAndrequestPermission();
     }
 
-    private void requestRequiredPermission() {
+    private void checkAndrequestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, requestPermissionCode);
         } else {
@@ -52,7 +55,7 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == requestPermissionCode) {
-            requestRequiredPermission();
+            checkAndrequestPermission();
         }
     }
 
@@ -69,7 +72,7 @@ public class MainActivity extends Activity {
                 String optDir = getDir("dex", 0).getAbsolutePath();
                 Log.d(TAG, "generateSdkApi:outPath=" + outPath + " jarName=" + jarName + " dexName=" + dexName + " optDir=" + optDir);
                 DexClassLoader classLoader = new DexClassLoader(dexName, optDir, null, getBaseContext().getClassLoader());
-                Sag.generateSdkApi(outPath, jarName, classLoader);
+                Sag.get(Logger.get()).generateSdkApi(outPath, jarName, classLoader);
 
                 Method method = null;
             }
