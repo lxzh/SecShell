@@ -130,7 +130,6 @@ public class Sag {
             for (int i = 0; i < annotionList.size(); i++) {
                 strBuffer.append("@" + annotionList.get(i) + "\n");
             }
-            logger.d(TAG, "exportJavaInfo:Annotations********************************");
             strBuffer.append("public @interface " + clz.getSimpleName() + " {}\n");
             return fileName;
         } else if (clz.isInterface()) {
@@ -191,8 +190,16 @@ public class Sag {
              */
             for (int i = 0; i < fLen; i++) {
                 Field field = fields[i];
+                String signature = getSignature(Field.class, field);
+                String typeName;
+                logger.d(TAG, "clz=" + clz + ",field=" + field + ",signature=" + signature + ",simpleSig=" + (signature != null ? getFieldType(pkgName, signature) : "null"));
+                if (signature != null) {
+                    typeName = signature.substring(1, 2);
+                } else {
+                    typeName = getClassName(pkgName, field.getType(), false);
+                }
                 strBuffer.append(TAB + Modifier.toString(field.getModifiers()) + " " +
-                        getClassName(pkgName, field.getType(), false) + " " + field.getName());
+                        typeName + " " + field.getName());
                 if (Modifier.isStatic(field.getModifiers())) {
                     try {
                         strBuffer.append(" = " + getDefaultValue(field.getType().getName()));
@@ -219,6 +226,9 @@ public class Sag {
                     break;
                 }
             }
+            /**
+             * parse constructor only if there is more than one non-default constructor
+             */
             if (hasNoneDefaultCtor) {
                 for (int i = 0; i < cLen; i++) {
                     Constructor constructor = constructors[i];
@@ -287,6 +297,13 @@ public class Sag {
         return fileName;
     }
 
+    /**
+     * get simple class name with cutting of package name, cut java.lang or current package name
+     *
+     * @param pkgName
+     * @param clzName
+     * @return
+     */
     private String getSimpleClassName(String pkgName, String clzName) {
         String rtnName;
         if (clzName.startsWith(BASE_PACKAGE) && clzName.lastIndexOf(".") == BASE_PACKAGE.length()) {
@@ -299,6 +316,12 @@ public class Sag {
         return rtnName;
     }
 
+    /**
+     * @param pkgName
+     * @param clz
+     * @param isClassDefine
+     * @return
+     */
     private String getClassName(String pkgName, Class clz, boolean isClassDefine) {
         String clzName = clz.getName();
         String rtnName;
@@ -316,14 +339,21 @@ public class Sag {
         return rtnName;
     }
 
+    /**
+     * get type variable of a generics type class
+     *
+     * @param pkgName
+     * @param typeClz
+     * @return
+     */
     private String getClassTypeVariable(String pkgName, Class typeClz) {
         TypeVariable<Class<?>>[] typeVariables = typeClz.getTypeParameters();
         logger.d(TAG, "clzInfo:" + typeClz.getCanonicalName() + "," + typeVariables);
-        int vlen = typeVariables.length;
-        if (vlen > 0) {
+        int vLen = typeVariables.length;
+        if (vLen > 0) {
             StringBuffer strBuffer = new StringBuffer("<");
             int cnt = 0;
-            for (int i = 0; i < vlen; i++) {
+            for (int i = 0; i < vLen; i++) {
                 TypeVariableItem item = getTypeVariable(pkgName, typeVariables[i]);
                 if (item != null) {
                     if (cnt > 0) {
@@ -339,6 +369,13 @@ public class Sag {
         return null;
     }
 
+    /**
+     * get a type variable item with generic name and parent class name pair from TypeVariable instance
+     *
+     * @param pkgName
+     * @param variable
+     * @return
+     */
     private TypeVariableItem getTypeVariable(String pkgName, TypeVariable<Class<?>> variable) {
         logger.d(TAG, "clzInfo:" + variable.toString() + "," + variable.getClass().getSuperclass());
         StringBuffer strBuffer = new StringBuffer();
@@ -373,14 +410,16 @@ public class Sag {
     }
 
     /**
-     * get method signature by reflection, such as:
+     * get signature of method, constructor or field by reflection. On the case of template class,
+     * we can only parse the real type name by signature when the type is Object or T, on
+     * reflection, the type of obj(T type) is java.lang.Object, such as:
      * for method:
      * public Object getValue1(T obj) {
      * return null;
      * }
      * return "(TT;)Ljava/lang/Object;"
      *
-     * @param clz Class of obj, method or constructor
+     * @param clz Class of obj, method, constructor or field
      * @param obj signature from whom to get
      * @return signature of obj
      */
@@ -396,12 +435,24 @@ public class Sag {
         return signature;
     }
 
+    /**
+     * parse return type name of a method
+     *
+     * @param pkgName
+     * @param mSignature
+     * @return
+     */
     private String getRtnTypeName(String pkgName, String mSignature) {
         String rtnSignature = mSignature.substring(mSignature.lastIndexOf(")") + 2, mSignature.length() - 1).replace("/", ".");
         String rtnTypeString = rtnSignature.substring(1);
         if (rtnSignature.length() == 2) {
             return rtnTypeString;
         } else {
+            /**
+             * attention generics type interface method in a interface type, such as:
+             * Class<? extends OutAnnotation> annotationType();
+             * so this is different from parameter of method or constructor and field
+             */
             if (rtnSignature.contains("<")) {
                 String type = getSimpleClassName(pkgName, rtnSignature.substring(0, rtnSignature.indexOf("<")));
                 TypeVariableItem item = new TypeVariableItem();
@@ -415,6 +466,13 @@ public class Sag {
         }
     }
 
+    /**
+     * get parameter type array from method or constructor
+     *
+     * @param pkgName
+     * @param mSignature
+     * @return
+     */
     private String[] getParamTypeNames(String pkgName, String mSignature) {
         String pSignature = mSignature.substring(mSignature.indexOf("(") + 1, mSignature.indexOf(")"));
         if (pSignature.length() == 0) {
@@ -432,7 +490,69 @@ public class Sag {
         return pSignatures;
     }
 
+    private String getFieldType(String pkgName, String fSignature) {
+        String simpleSig = fSignature.replace("/", ".")
+                .replace(BASE_PACKAGE + ".", "")
+                .replace(pkgName + ".", "")
+                .replace(";", ",")
+                .replace(",>", ">");
+        simpleSig = simpleSig.substring(0, simpleSig.length() - 1);//remove last ','
+        StringBuffer buff = new StringBuffer();
+        int len = simpleSig.length();
+        int idx = 1;
+        int start = 0;
+        char ch, cs;
+        String typeSig;
+        String typeName;
+        ///TODO
+        while (idx < len) {
+            cs = simpleSig.charAt(start);
+            while(cs=='<'||cs=='>'||cs==','){
+                cs = simpleSig.charAt(++start);
+            }
+            ch = simpleSig.charAt(idx);
+            switch (ch) {
+                case '<':
+                case '>':
+                case ',':
+                    if (idx - start > 2) {
+                        typeSig = simpleSig.substring(start + 1, idx);
+                        typeName = getSimpleClassName(pkgName, typeSig);
+                        buff.append(typeName);
+                        if (cs == '[') {
+                            buff.append("[]");
+                        }
+                    }
+                    start = idx++;
+                    break;
+                case '+':
+                    buff.append("? extends ");
+                    start = idx++;
+                    break;
+                case '[':
+                    start = idx++;
+                    break;
+                default:
+                    idx++;
+                    break;
+            }
+        }
+        return simpleSig+"-"+buff.toString();
+    }
+
+    /**
+     * get all parameter in final mode from method or constructor
+     *
+     * @param pkgName
+     * @param signature
+     * @param parameters
+     * @return
+     */
     private String getParameter(String pkgName, String signature, Class[] parameters) {
+        /**
+         * if signature is not null, we parse the parameter type from signature to distinguish type
+         * name from Object and T
+         */
         StringBuffer strBuffer = new StringBuffer();
         if (signature != null) {
             String[] params = getParamTypeNames(pkgName, signature);
@@ -448,6 +568,10 @@ public class Sag {
             }
         }
 
+        /**
+         * parse the parameter type by normal reflection, if the signature is null, the type just
+         * basic type (eight basic type)
+         */
         int len = parameters.length;
         for (int i = 0; i < len; i++) {
             Class parameter = parameters[i];
@@ -459,6 +583,12 @@ public class Sag {
         return strBuffer.length() == 0 ? null : strBuffer.toString();
     }
 
+    /**
+     * get default value of a field of return value of a method, just return a fused value
+     *
+     * @param type
+     * @return
+     */
     private String getDefaultValue(String type) {
         String value = null;
         for (int j = 0; j < BASIC_TYPE_COUNT; j++) {
