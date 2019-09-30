@@ -1,5 +1,7 @@
 package com.lxzh123.libsag;
 
+import org.omg.Dynamic.Parameter;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.annotation.Annotation;
@@ -21,6 +23,7 @@ public class Sag {
     private final static List<String> ENUM_METHOD = Arrays.asList(new String[]{"values", "valueOf", "name", "compareTo", "getDeclaringClass", "ordinal"});
     private final static int BASIC_TYPE_COUNT = 8;
     private final static String[] BASIC_TYPE = {"byte", "short", "int", "long", "boolean", "char", "float", "double"};
+    private final static char[] BASIC_TYPE_BYTE_CODE = {'B', 'S', 'I', 'J', 'Z', 'C', 'F', 'D'};
     private final static String[] DEFAULT_VALUE = {"0", "0", "0", "0", "false", "\'\0\'", "0.0f", "0.0"};
     private final static String BASE_PACKAGE = "java.lang";
 
@@ -190,14 +193,21 @@ public class Sag {
              */
             for (int i = 0; i < fLen; i++) {
                 Field field = fields[i];
-                String signature = getSignature(Field.class, field);
+                String fSignature = getSignature(Field.class, field);
+                String cSignature = null;
                 String typeName;
-                logger.d(TAG, "clz=" + clz + ",field=" + field + ",signature=" + signature + ",simpleSig=" + (signature != null ? getFieldType(pkgName, signature) : "null"));
-                if (signature != null) {
-                    typeName = signature.substring(1, 2);
+                if (fSignature != null) {
+                    typeName = getFieldType(pkgName, fSignature);
                 } else {
-                    typeName = getClassName(pkgName, field.getType(), false);
+                    cSignature = field.getType().getName();
+                    if (cSignature != null && cSignature.startsWith("[")) {
+                        typeName = getArrayType(pkgName, cSignature);
+                    } else {
+                        typeName = getClassName(pkgName, field.getType(), false);
+                    }
+//                    typeName = getClassName(pkgName, field.getType(), false);
                 }
+                logger.d(TAG, "clz=" + clz + ",field=" + field + ",FSignature=" + fSignature + ",CSignature=" + cSignature + ",simpleSig=" + typeName);
                 strBuffer.append(TAB + Modifier.toString(field.getModifiers()) + " " +
                         typeName + " " + field.getName());
                 if (Modifier.isStatic(field.getModifiers())) {
@@ -492,8 +502,6 @@ public class Sag {
 
     private String getFieldType(String pkgName, String fSignature) {
         String simpleSig = fSignature.replace("/", ".")
-                .replace(BASE_PACKAGE + ".", "")
-                .replace(pkgName + ".", "")
                 .replace(";", ",")
                 .replace(",>", ">");
         simpleSig = simpleSig.substring(0, simpleSig.length() - 1);//remove last ','
@@ -507,7 +515,7 @@ public class Sag {
         ///TODO
         while (idx < len) {
             cs = simpleSig.charAt(start);
-            while(cs=='<'||cs=='>'||cs==','){
+            while ((cs == '<' || cs == '>' || cs == ',' || cs == '+') && start < len - 1) {
                 cs = simpleSig.charAt(++start);
             }
             ch = simpleSig.charAt(idx);
@@ -515,14 +523,31 @@ public class Sag {
                 case '<':
                 case '>':
                 case ',':
-                    if (idx - start > 2) {
-                        typeSig = simpleSig.substring(start + 1, idx);
-                        typeName = getSimpleClassName(pkgName, typeSig);
-                        buff.append(typeName);
+                    if (idx - start > 0) {
+                        if (idx - start > 2) {
+                            if (cs == '[') {
+                                typeSig = simpleSig.substring(start + 2, idx);
+                            } else {
+                                typeSig = simpleSig.substring(start + 1, idx);
+                            }
+                            typeName = getSimpleClassName(pkgName, typeSig);
+                            buff.append(typeName);
+                        } else if (idx - start > 1) {
+                            typeSig = simpleSig.substring(start + 1, idx);
+                            typeName = getBasicType(typeSig.charAt(0));
+                            if (typeName != null) {
+                                buff.append(typeName);
+                            } else {
+                                buff.append(typeSig);
+                            }
+                        } else {
+
+                        }
                         if (cs == '[') {
                             buff.append("[]");
                         }
                     }
+                    buff.append(ch);
                     start = idx++;
                     break;
                 case '+':
@@ -530,14 +555,179 @@ public class Sag {
                     start = idx++;
                     break;
                 case '[':
-                    start = idx++;
+                    if (cs != '[') {
+                        idx++;
+                    } else {
+                        start = idx++;
+                    }
                     break;
                 default:
-                    idx++;
+                    if (cs == '[' && idx - start == 1) {
+                        String tmp = getBasicType(ch);
+                        if (tmp != null) {
+                            buff.append(tmp + "[]");
+                            start = idx++;
+                            if (idx < len) {
+                                ch = simpleSig.charAt(idx);
+                                if (ch == 'L' || ch == '[') {
+                                    buff.append(",");
+                                }
+                            }
+                        } else {
+                            idx++;
+                        }
+                    } else {
+                        idx++;
+                    }
                     break;
             }
         }
-        return simpleSig+"-"+buff.toString();
+        if (idx - start >= 2) {
+            typeSig = simpleSig.substring(start + 1, idx);
+            typeName = getSimpleClassName(pkgName, typeSig);
+            buff.append(typeName);
+        }
+        return buff.toString().replace(BASE_PACKAGE + ".", "").replace(pkgName + ".", "");
+    }
+
+    private String getArrayType(String pkgName, String signature) {
+        String typeStr = signature.substring(1);
+        String typeName;
+        if (typeStr.length() == 1) {
+            typeName = getBasicType(typeStr.charAt(0));
+        } else {
+            typeName = getSimpleClassName(pkgName, typeStr.substring(1, typeStr.length() - 1));
+        }
+        return typeName + "[]";
+    }
+
+    public ParseItem parseTypeFromSignature(String pkgName, String input) {
+        String signature = input.replace("/", ".");
+        int idx = 0;
+        char ch;
+        int len = signature.length();
+        StringBuffer buff = new StringBuffer();
+        int refIdx = -1;
+        int genIdx = -1;
+        int colIdx = -1;
+        int arrIdx = -1;
+        String arr = "";
+        boolean lastRef = false;
+        boolean isFinished = false;
+        while (idx < len && !isFinished) {
+            ch = signature.charAt(idx);
+            switch (ch) {
+                case 'Z'://boolean
+                case 'B'://byte
+                case 'C'://char
+                case 'S'://short
+                case 'I'://int
+                case 'J'://long
+                case 'F'://float
+                case 'D'://double
+                    if (refIdx >= 0) {
+
+                    } else if (colIdx >= 0) {
+
+                    } else {
+                        String tmpType = getBasicType(ch);
+                        if (tmpType != null) {
+                            buff.append(tmpType);
+                            isFinished = true;
+                        }
+                    }
+                    break;
+                case 'L'://reference type start, must end with ';'
+                    if (refIdx < 0) {
+                        refIdx = idx;
+                    }
+                    break;
+                case 'T'://generic type start, must end with ';'
+                    if (genIdx < 0) {
+                        genIdx = idx;
+                    }
+                    break;
+                case ';'://reference type end
+                    if (refIdx >= 0) {
+                        String tmpType = getSimpleClassName(pkgName, signature.substring(refIdx + 1, idx));
+                        if (lastRef) {
+                            buff.append(", ");
+                            lastRef = false;
+                        }
+                        buff.append(tmpType);
+                        refIdx = -1;
+                        lastRef = true;
+                    } else if (genIdx >= 0) {
+                        String tmpType = getSimpleClassName(pkgName, signature.substring(genIdx + 1, idx));
+                        if (lastRef) {
+                            buff.append(", ");
+                            lastRef = false;
+                        }
+                        buff.append(tmpType);
+                        genIdx = -1;
+                        lastRef = true;
+                    }
+                    break;
+                case '<'://collection type start
+                    if (refIdx < 0) {
+                        logger.d(TAG, "Error signature:" + signature);
+                        return null;
+                    } else {
+                        String tmpType = signature.substring(refIdx + 1, idx);
+                        buff.append(tmpType + "<");
+                        refIdx = -1;
+//                        colIdx = idx;
+                    }
+
+                    int end = signature.lastIndexOf(">");
+                    if (end > idx) {
+                        String subSig = signature.substring(idx + 1, end);
+                        ParseItem item = parseTypeFromSignature(pkgName, subSig);
+                        String subType = item.result;
+                        if (item.parseLength < subSig.length()) {
+                            String rightSig = signature.substring(idx + 1 + item.parseLength, end);
+                            ParseItem right = parseTypeFromSignature(pkgName, rightSig);
+                            String rightType = right.result;
+                            buff.append(subType + ", " + rightType + ">");
+                        } else {
+                            buff.append(subType + ">");
+                        }
+                        idx = end;
+                    }
+                    lastRef = false;
+                    break;
+                case '>'://collection type end
+                    colIdx = -1;
+
+                    break;
+                case '+'://wildcard type, <? extends xxx>
+                    if (lastRef) {
+                        buff.append(", ");
+                        lastRef = false;
+                    }
+                    buff.append("? extends ");
+                    break;
+                case '['://array start
+                    arr += "[]";
+                    String subSig = signature.substring(idx + 1);
+                    ParseItem item = parseTypeFromSignature(pkgName, subSig);
+                    String subType = item.result;
+                    if (lastRef) {
+                        buff.append(", ");
+                        lastRef = false;
+                    }
+                    buff.append(subType + "[]");
+                    idx += item.parseLength;
+                    if (item.parseLength == 1) {
+                        isFinished = true;
+                    }
+                    arrIdx = -1;
+                    lastRef = true;
+                    break;
+            }
+            idx++;
+        }
+        return new ParseItem(buff.toString(), idx);
     }
 
     /**
@@ -581,6 +771,31 @@ public class Sag {
             }
         }
         return strBuffer.length() == 0 ? null : strBuffer.toString();
+    }
+
+    /**
+     * type map from byte code type to basic type
+     * Z   boolean
+     * B   byte
+     * C   char
+     * S   short
+     * I   int
+     * J   long
+     * F   float
+     * D   double
+     *
+     * @param ch
+     * @return
+     */
+    private String getBasicType(char ch) {
+        String value = null;
+        for (int i = 0; i < BASIC_TYPE_COUNT; i++) {
+            if (ch == BASIC_TYPE_BYTE_CODE[i]) {
+                value = BASIC_TYPE[i];
+                break;
+            }
+        }
+        return value;
     }
 
     /**

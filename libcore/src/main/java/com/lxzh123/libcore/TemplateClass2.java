@@ -16,6 +16,7 @@ public class TemplateClass2<T extends Comparator, K extends Comparable> {
     public Set<Integer> value61;
     public Set<String> value62;
     public Set<int[]> value63;
+    public Set<Void[]> value64;
     public Set<? extends OutClass> value7;
     public List<String> value8;
     public List<String[]> value9;
@@ -24,6 +25,8 @@ public class TemplateClass2<T extends Comparator, K extends Comparable> {
     public Map<String[], String> value12;
     public Map<int[], List<String>> value13;
     public Map<T, List<Map<Set<Map<String, int[]>>, List<Object>>>> value14;
+    public List<Map<Map<int[][], List<String[]>>, int[][]>[]>[] value15;
+    public List<Map<Map<int[][][][][], List<Map<T, Map<String[][], List<int[]>>>>>, int[][]>[]>[] value16;
 
     public TemplateClass2(T a, K b, Object obj) {
     }
