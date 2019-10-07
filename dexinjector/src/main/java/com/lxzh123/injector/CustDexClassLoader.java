@@ -139,7 +139,7 @@ public class CustDexClassLoader extends ClassLoader {
 //            dexElements = new Element[] { new Element(dex) };
 
             Method initByteBufferDexPathMethod = DexPathListClass.getMethod("initByteBufferDexPath", ByteBuffer[].class);
-            initByteBufferDexPathMethod.invoke(pathList, dexFiles);
+            initByteBufferDexPathMethod.invoke(pathList, new Object[]{dexFiles});
             findClassMethod = DexPathListClass.getMethod("findClass", String.class, List.class);
             findResourceMethod = DexPathListClass.getMethod("findResource", String.class);
             findResourcesMethod = DexPathListClass.getMethod("findResources", String.class);

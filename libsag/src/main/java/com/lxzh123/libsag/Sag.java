@@ -1,7 +1,5 @@
 package com.lxzh123.libsag;
 
-import org.omg.Dynamic.Parameter;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.annotation.Annotation;
@@ -610,7 +608,6 @@ public class Sag {
         int refIdx = -1;
         int genIdx = -1;
         int colIdx = -1;
-        int arrIdx = -1;
         String arr = "";
         boolean lastRef = false;
         boolean isFinished = false;
@@ -641,6 +638,10 @@ public class Sag {
                     if (refIdx < 0) {
                         refIdx = idx;
                     }
+                    if (lastRef) {
+                        buff.append(", ");
+                        lastRef = false;
+                    }
                     break;
                 case 'T'://generic type start, must end with ';'
                     if (genIdx < 0) {
@@ -667,6 +668,9 @@ public class Sag {
                         genIdx = -1;
                         lastRef = true;
                     }
+                    if (buff.length() > 0) {
+                        isFinished = true;
+                    }
                     break;
                 case '<'://collection type start
                     if (refIdx < 0) {
@@ -680,6 +684,9 @@ public class Sag {
                     }
 
                     int end = signature.lastIndexOf(">");
+                    if (end < idx) {
+                        end = len;
+                    }
                     if (end > idx) {
                         String subSig = signature.substring(idx + 1, end);
                         ParseItem item = parseTypeFromSignature(pkgName, subSig);
@@ -708,26 +715,40 @@ public class Sag {
                     buff.append("? extends ");
                     break;
                 case '['://array start
-                    arr += "[]";
-                    String subSig = signature.substring(idx + 1);
+                    int arrLen = getArrayLen(signature, idx);
+                    for (int i = 0; i < arrLen; i++) {
+                        arr += "[]";
+                    }
+                    String subSig = signature.substring(idx + arrLen);
                     ParseItem item = parseTypeFromSignature(pkgName, subSig);
                     String subType = item.result;
                     if (lastRef) {
                         buff.append(", ");
                         lastRef = false;
                     }
-                    buff.append(subType + "[]");
+                    buff.append(subType + arr);
                     idx += item.parseLength;
-                    if (item.parseLength == 1) {
+                    if (item.subItem) {
                         isFinished = true;
                     }
-                    arrIdx = -1;
                     lastRef = true;
-                    break;
+                    idx += arrLen;
+                    continue;
             }
             idx++;
         }
-        return new ParseItem(buff.toString(), idx);
+        return new ParseItem(buff.toString(), idx, idx < len);
+    }
+
+    private int getArrayLen(String signature, int idx) {
+        int len = signature.length();
+        int i = idx;
+        for (; i < len; i++) {
+            if (signature.charAt(i) != '[') {
+                break;
+            }
+        }
+        return i - idx;
     }
 
     /**

@@ -40,9 +40,15 @@ public class BytecodeTypeParseTest {
                 "java.util.List<java.util.Map<int[][], int[][]>[]>", "Ljava/util/List<[Ljava/util/Map<[[I[[I>;>;",
                 "java.util.List<java.util.Map<int[][], int[][]>[]>[]", "[Ljava/util/List<[Ljava/util/Map<[[I[[I>;>;",
                 "java.util.List<java.util.Map<java.util.Map<int[][], java.util.List<String[]>>, int[][]>[]>[]",
-                    "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[ILjava/util/List<[Ljava/lang/String;>;>;[[I>;>;",
+                "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[ILjava/util/List<[Ljava/lang/String;>;>;[[I>;>;",
                 "java.util.List<java.util.Map<java.util.Map<int[][][][][], java.util.List<java.util.Map<T, java.util.Map<String[][], java.util.List<int[]>>>>>, int[][]>[]>[]",
-                    "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[[[[ILjava/util/List<Ljava/util/Map<TT;Ljava/util/Map<[[Ljava/lang/String;Ljava/util/List<[I>;>;>;>;>;[[I>;>;",
+                "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[[[[ILjava/util/List<Ljava/util/Map<TT;Ljava/util/Map<[[Ljava/lang/String;Ljava/util/List<[I>;>;>;>;>;[[I>;>;",
+                "java.util.List<java.util.Map<java.util.Map<int[][][][][], java.util.List<java.util.Map<T, java.util.Map<java.util.List<String>[][], java.util.List<int[]>>>>>, int[][]>[]>[]",
+                "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[[[[ILjava/util/List<Ljava/util/Map<TT;Ljava/util/Map<[[Ljava/util/List<Ljava/lang/String;>;Ljava/util/List<[I>;>;>;>;>;[[I>;>;",
+                "java.util.List<java.util.Map<java.util.Map<int[][][][][], java.util.List<java.util.Map<T, java.util.Map<java.util.Map<String, Integer>[][], java.util.List<int[]>>>>>, int[][]>[]>[]",
+                "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[[[[ILjava/util/List<Ljava/util/Map<TT;Ljava/util/Map<[[Ljava/util/Map<Ljava/lang/String;Ljava/lang/Integer;>;Ljava/util/List<[I>;>;>;>;>;[[I>;>;",
+                "java.util.List<java.util.Map<java.util.Map<int[][][][][], java.util.List<java.util.Map<T, java.util.Map<java.util.Map<String, T>[][], java.util.List<int[]>>>>>, int[][]>[]>[]",
+                "[Ljava/util/List<[Ljava/util/Map<Ljava/util/Map<[[[[[ILjava/util/List<Ljava/util/Map<TT;Ljava/util/Map<[[Ljava/util/Map<Ljava/lang/String;TT;>;Ljava/util/List<[I>;>;>;>;>;[[I>;>;",
                 "L", "LL;",
                 "T", "TT;",
                 "K", "TK;",
@@ -51,12 +57,17 @@ public class BytecodeTypeParseTest {
         Sag sag = Sag.get(Logger.get());
         int len = typeMap.length;
         String pkgName = getClass().getPackage().getName();
+        int equalCnt = 0;
         for (int i = 0; i < len; i += 2) {
             String expect = typeMap[i];
             String input = typeMap[i + 1];
             String actual = sag.parseTypeFromSignature(pkgName, input).result;
+            if (expect.equals(actual)) {
+                equalCnt++;
+            }
             Logger.get().d("UnitTest", "i=" + i + ":input=" + input + ", expect=" + expect + ", actual=" + actual + ", isEQ=" + expect.equals(actual));
 //            assertEquals(expect, actual);
         }
+        Logger.get().d("UnitTest", "len=" + len + ", equalCnt=" + equalCnt);
     }
 }
