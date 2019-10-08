@@ -2,7 +2,7 @@ package com.lxzh123.sdkshelldemo;
 
 import android.app.Application;
 
-import com.lxzh123.injector.Loader;
+import com.lxzh123.shell.Loader;
 
 //import com.lxzh123.libshell.Shell;
 

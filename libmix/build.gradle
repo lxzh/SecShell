@@ -16,16 +16,92 @@ jar {
     manifest { attributes 'Main-Class': 'com.lxzh123.libmix.Mix' }
 }
 
+task clearJar(type: Delete) {
+    println("=====================task clearJar start.=========================")
+    delete 'build/libs/'
+    println("=====================task clearJar start.=========================")
+}
+
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+}
+
+task makeJar(type: Copy, dependsOn: ':libmix:packageReleaseJar') {
+    println("=====================task makeJar start.=========================")
+
+    def projectDir = getProjectDir().getAbsolutePath()
+    def buildDir = getBuildDir().getAbsolutePath()
+    def fileName = jar.baseName + "-" + jar.version + ".jar"
+    def fromDir = buildDir + File.separator + "libs" + File.separator
+    def fromFile = fromDir + fileName
+    def intoDir = projectDir + File.separator + "output" + File.separator
+    def jarName = "libmix.jar"
+
+    println("fromDir=" + fromDir)
+    println("intoDir=" + intoDir)
+
+    //copy jar file to output directory
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            jarName
+        }
+    }
+//    from(fromDir)
+//    into(intoDir)
+//    include(fileName)
+//    rename(fileName, jarName)
+    println("=====================task makeJar end.=========================")
+}
+
+task mixDex(dependsOn: ':libmix:makeJar') {
+    println("=====================task mixDex start.=========================")
+    def projectDir = getProjectDir().getAbsolutePath()
+    def jarDir = projectDir + File.separator + "output" + File.separator
+    def jarName = "libmix.jar"
+
+    //exec command to mix dex file
+    def dexName = "libcore.dex"
+    def mixName = "libcore.data"
+    def jarFile = jarDir + jarName
+    def srcFile = jarDir + dexName
+    def dstFile = jarDir + mixName
+    def command = "java -jar " + jarFile + " -en -s " + srcFile + " -d " + dstFile
+    println("command:" + command)
+    command.execute()
+
+    //copy mixed dex file to project(:libshell)
+    def intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
+    copy {
+        from dstFile
+        into intoDir
+        rename {
+            mixName
+        }
+    }
+    println("=====================task mixDex end.=========================")
+}
+
+//makeJar.dependsOn(clearJar, packageReleaseJar)
+
 build {
     doLast {
-        //copy jar file to output directory
+        println("=====================build.doLast start.=========================")
         def projectDir = getProjectDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
-        def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
+        def fromDir = buildDir + File.separator + "libs" + File.separator
+        def fromFile = fromDir + fileName
         def intoDir = projectDir + File.separator + "output" + File.separator
         def jarName = "libmix.jar"
-        println("=====================build.doLast start.=========================")
+
+        println("fromDir=" + fromDir)
+        println("intoDir=" + intoDir)
+
+        //copy jar file to output directory
         copy {
             from fromFile
             into intoDir
@@ -37,16 +113,15 @@ build {
         //exec command to mix dex file
         def dexName = "libcore.dex"
         def mixName = "libcore.data"
-        def outJar = intoDir + jarName
-        def srcFile = intoDir + dexName
-        def dstFile = intoDir + mixName
-        def command = "java -jar " + outJar + " -en -s " + srcFile + " -d " + dstFile
+        def jarFile = jarDir + jarName
+        def srcFile = jarDir + dexName
+        def dstFile = jarDir + mixName
+        def command = "java -jar " + jarFile + " -en -s " + srcFile + " -d " + dstFile
         println("command:" + command)
         command.execute()
 
-        //copy mixed dex file to project(:dexinjector)
-        new File()
-        intoDir = getRootDir().getAbsolutePath() + "/dexinjector/src/main/assets/"
+        //copy mixed dex file to project(:libshell)
+        intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
         copy {
             from dstFile
             into intoDir
@@ -57,26 +132,3 @@ build {
         println("=====================build.doLast success.=========================")
     }
 }
-//
-//task copyjar(dependsOn: ['packageRelease']) {
-//    doLast {
-//        def rootProjectpath = getRootDir().absolutePath
-//
-//        def fileName = "libmix-1.0.jar"
-//        def newName = "libmix.jar"
-//        def fromFile = rootProjectpath + "\\libmix\\build\\libs\\" + fileName
-//        def intoFile = rootProjectpath + "\\libmix\\output\\" + fileName
-//        // copy --> rename
-//        println("=====================build.copyjar begin.=========================" + new File(fromFile).exists())
-//        println(new File(fromFile).absolutePath)
-//        copy {
-//            from fromFile
-//            into intoFile
-//            rename {
-//                newName
-//            }
-//        }
-//        println("=====================build.copyjar end.=========================" + new File(intoFile).exists())
-//        println(new File(intoFile + fileName).absolutePath)
-//    }
-//}

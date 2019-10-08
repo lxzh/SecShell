@@ -19,9 +19,110 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//            libraryVariants.all { variant ->
+//                variant.outputs.all { output ->
+//                    def fileName
+//                    if (variant.buildType.name.equals('release')) {
+//                        fileName = "corestub-release.aar"
+//                    } else if (variant.buildType.name.equals('debug')) {
+//                        fileName = "corestub-debug.aar"
+//                    }
+//                    outputFileName = fileName
+//                }
+//            }
+//            libraryVariants.whenObjectAdded { variant ->
+//                variant.outputs.all { output ->
+//                    println("variant:" + variant)
+//                    println("variant.outputs:" + variant.outputs)
+//                    println("variant.buildType:" + variant.buildType)
+//                    println("variant.buildType.name:" + variant.buildType.name)
+//                    def fileName = "corestub.aar"
+//                    outputFileName = fileName
+//                }
+//            }
         }
     }
+}
 
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+}
+
+def copyAAR(String fromFile, String intoDir, String aarName) {
+    def intoFile = intoDir + aarName
+    delete intoFile
+    println("fromFile=" + fromFile)
+    println("intoDir=" + intoDir)
+    println("aarName=" + aarName)
+    println("fromFile:" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            aarName
+        }
+    }
+    def newFile = new File(intoFile)
+    println("aar:" + newFile.getAbsolutePath() + ", exists=" + newFile.exists())
+}
+
+task copyAAR(dependsOn: [':corestub:assembleRelease']) {
+    println("=====================task copyAAR start.=========================")
+    def rootProjectpath = getRootDir().absolutePath
+    def buildDir = getBuildDir().getAbsolutePath()
+    def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
+    def intoDir = rootProjectpath + "/demo/geetestsdk/"
+    def aarName = "corestub.aar"
+    copyAAR(fromFile, intoDir, aarName)
+    println("=====================task copyAAR end.=========================")
+}
+//
+//task copyDebugAAR(dependsOn: ['assembleDebug']){
+//    println("=====================task copyDebugAAR start.=========================")
+//    def rootProjectpath = getRootDir().absolutePath
+//    def buildDir = getBuildDir().getAbsolutePath()
+//    def fileName = "corestub-debug.aar"
+//    def fromFile = buildDir + "/outputs/aar/" + fileName
+//    def intoDir = rootProjectpath+ "/demo/geetestsdk/"
+//    def aarName = "corestub.aar"
+//
+//    copyAAR(fromFile, intoDir, aarName)
+//    println("=====================task copyDebugAAR end.=========================")
+//}
+//
+//task copyReleaseAAR(dependsOn: ['assembleRelease']){
+//    println("=====================task copyReleaseAAR start.=========================")
+//    def rootProjectpath = getRootDir().absolutePath
+//    def buildDir = getBuildDir().getAbsolutePath()
+//    def fileName = "corestub-release.aar"
+//    def fromFile = buildDir + "/outputs/aar/" + fileName
+//    def intoDir = rootProjectpath+ "/demo/geetestsdk/"
+//    def aarName = "corestub.aar"
+//
+//    copyAAR(fromFile, intoDir, aarName)
+//    println("=====================task copyReleaseAAR end.=========================")
+//}
+
+task exec(dependsOn: ':libsag:genStubSdk') {
+    doLast {
+        println("=====================task exec start.=========================")
+        println("=====================task exec start.=========================")
+    }
+}
+
+build {
+    doLast {
+        println("=====================build.doLast start.=========================")
+        def rootProjectpath = getRootDir().absolutePath
+        def buildDir = getBuildDir().getAbsolutePath()
+        def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
+        def intoDir = rootProjectpath + "/demo/geetestsdk/"
+        def aarName = "corestub.aar"
+        copyAAR(fromFile, intoDir, aarName)
+        println("=====================build.doLast end.=========================")
+    }
 }
 
 dependencies {

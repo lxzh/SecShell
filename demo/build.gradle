@@ -21,8 +21,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 }
+
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+}
+
+//task exec(dependsOn: ':corestub:copyAAR') {
+//    doLast {
+//        println("=====================task exec start.=========================")
+//        println("=====================task exec start.=========================")
+//    }
+//}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -32,7 +44,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    compileOnly files('geetestsdk\\corestub.aar')
-//    implementation files('geetestsdk\\libshell.aar')
-    implementation project(':dexinjector')
+//    compileOnly files('geetestsdk\\corestub.aar')
+    implementation project(':libshell')
 }

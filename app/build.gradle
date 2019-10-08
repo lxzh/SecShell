@@ -40,11 +40,18 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
-    externalNativeBuild {
-        cmake {
-            path "src/main/cpp/CMakeLists.txt"
-            version "3.10.2"
-        }
+}
+
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+}
+
+task exec(dependsOn: ':libsag:genStubSdk'){
+    doLast {
+        println("=====================task exec start.=========================")
+        println("=====================task exec start.=========================")
     }
 }
 
@@ -55,8 +62,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    compileOnly project(':libcore')
-//    implementation project(':libshell')
-    implementation project(':dexloader')
-    implementation project(':dexinjector')
+    compileOnly project(':corestub')
+    implementation project(':libshell')
 }

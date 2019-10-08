@@ -12,19 +12,13 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
 
-        ndk {
-            // Specifies the ABI configurations of your native
-            // libraries Gradle should build and package with your APK.
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
-        }
         externalNativeBuild {
             cmake {
-                cppFlags "-std=c++14 -frtti -fexceptions"
-//                arguments "-DANDROID_TOOLCHAIN=clang"
-//                cppFlags "-std=c++14 -frtti -fexceptions"
-                arguments '-DANDROID_PLATFORM=android-29',
-                    '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=c++_shared'
+                cppFlags "-std=c++11 -fno-rtti -fno-exceptions"
+                arguments '-DANDROID_PLATFORM=android-16',
+                        '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=none'
                 abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
             }
         }
@@ -33,28 +27,35 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles.add(file("proguard-rules.txt"))
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable = true
-            jniDebuggable = true
-            renderscriptDebuggable = true
-        }
-        debug {
-            minifyEnabled false
-            proguardFiles.add(file("proguard-rules.txt"))
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable = true
-            jniDebuggable = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
-//            version "3.10.2"
+            version "3.10.2"
         }
     }
-    lintOptions {
-        abortOnError false
+}
+
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+    doFirst {
+        println("=====================" + proName + " task prepare.doFirst start.=========================")
+        println("=====================" + proName + " task prepare.doFirst end.=========================")
+    }
+    doLast {
+        println("=====================" + proName + " task prepare.doLast start.=========================")
+        println("=====================" + proName + " task prepare.doLast end.=========================")
+    }
+}
+
+task exec(dependsOn: ':libmix:mixDex'){
+    doLast {
+        println("=====================task exec start.=========================")
+        println("=====================task exec start.=========================")
     }
 }
 
@@ -65,4 +66,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.github.asLody:turbodex:1.1.0'
 }

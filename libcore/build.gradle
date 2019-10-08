@@ -40,6 +40,12 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
+task prepare() {
+    def proName = getProject().getName()
+    println("=====================" + proName + " task prepare start.=========================")
+    println("=====================" + proName + " task prepare end.=========================")
+}
+
 task cleanbuild(){
     if (getBuildDir().exists()){
         println "============clean build dir "+getBuildDir().absolutePath
