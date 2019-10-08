@@ -695,17 +695,24 @@ public class Sag {
                             String rightSig = signature.substring(idx + 1 + item.parseLength, end);
                             ParseItem right = parseTypeFromSignature(pkgName, rightSig);
                             String rightType = right.result;
-                            buff.append(subType + ", " + rightType + ">");
+                            if (rightType.equals(">")) {
+                                buff.append(subType + rightType);
+                                idx += item.parseLength + right.parseLength;
+                                isFinished = true;
+                            } else {
+                                buff.append(subType + ", " + rightType);
+                                idx += item.parseLength + right.parseLength;
+                            }
                         } else {
                             buff.append(subType + ">");
+                            idx = end;
                         }
-                        idx = end;
                     }
                     lastRef = false;
                     break;
                 case '>'://collection type end
                     colIdx = -1;
-
+                    buff.append(">");
                     break;
                 case '+'://wildcard type, <? extends xxx>
                     if (lastRef) {
