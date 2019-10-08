@@ -159,7 +159,7 @@ public class Sag {
             } else {
                 strBuffer.append(" extends ");
             }
-            strBuffer.append(getClassName(pkgName, spClz, true));
+            strBuffer.append(getClassName(pkgName, spClz));
         }
         strBuffer.append(" {\n");
 
@@ -204,7 +204,7 @@ public class Sag {
                          */
                         typeName = parseType(pkgName, cSignature);
                     } else {
-                        typeName = getClassName(pkgName, field.getType(), false);
+                        typeName = getClassName(pkgName, field.getType());
                     }
                 }
                 logger.d(TAG, "clz=" + clz + ",field=" + field + ",FSignature=" + fSignature + ",CSignature=" + cSignature + ",simpleSig=" + typeName);
@@ -277,7 +277,7 @@ public class Sag {
                 String rtnSignature = signature.substring(signature.lastIndexOf(")") + 1);
                 rtnTypeStr = parseType(pkgName, rtnSignature);
             } else {
-                rtnTypeStr = getClassName(pkgName, rtnType, false);
+                rtnTypeStr = getClassName(pkgName, rtnType);
             }
             strBuffer.append(TAB + (clz.isInterface() || clz.isAnnotation() ? "" :
                     Modifier.toString(method.getModifiers())) + " " +
@@ -329,16 +329,12 @@ public class Sag {
     /**
      * @param pkgName
      * @param clz
-     * @param isClassDefine
      * @return
      */
-    private String getClassName(String pkgName, Class clz, boolean isClassDefine) {
+    private String getClassName(String pkgName, Class clz) {
         String clzName = clz.getName();
         String rtnName;
-        String typeVar = getClassTypeVariableSimple(clz);
-        if (!isClassDefine && typeVar != null) {
-            return typeVar;
-        } else if (clzName.startsWith(BASE_PACKAGE) && clzName.lastIndexOf(".") == BASE_PACKAGE.length()) {
+        if (clzName.startsWith(BASE_PACKAGE) && clzName.lastIndexOf(".") == BASE_PACKAGE.length()) {
             rtnName = clz.getSimpleName();
         } else if (clzName.startsWith(pkgName) && clzName.lastIndexOf(".") == pkgName.length()) {
             rtnName = clz.getSimpleName();
@@ -356,6 +352,7 @@ public class Sag {
      * @param typeClz
      * @return
      */
+    @SuppressWarnings("unchecked")
     private String getClassTypeVariable(String pkgName, Class typeClz) {
         TypeVariable<Class<?>>[] typeVariables = typeClz.getTypeParameters();
         logger.d(TAG, "clzInfo:" + typeClz.getCanonicalName() + "," + typeVariables);
@@ -397,31 +394,14 @@ public class Sag {
         if (tlen > 0) {
             strBuffer.append(" extends ");
             for (int j = 0; j < tlen; j++) {
-                item.parentName = getClassName(pkgName, (Class) types[j], true);
-                logger.d(TAG, "clzInfo:Bounds:" + variable.toString() + "," + types[j].toString() + "," + ((Class) types[j]).getName());
+                item.parentName = getClassName(pkgName, (Class) types[j]);
+                logger.d(TAG, "clzInfo:Bounds:" + variable.toString() + "," +
+                        types[j].toString() + "," + ((Class) types[j]).getName());
             }
             return item;
         } else {
             return null;
         }
-    }
-
-    /**
-     * get type variable string
-     * @param clz
-     * @return
-     */
-    private String getClassTypeVariableSimple(Class clz) {
-        TypeVariable<Class<?>>[] typeVariables = clz.getTypeParameters();
-        logger.d(TAG, "clzInfo:" + clz.getCanonicalName() + "," + typeVariables);
-        int vlen = typeVariables.length;
-        if (vlen > 0) {
-            for (int i = 0; i < vlen; i++) {
-                logger.d(TAG, "clzInfo:" + typeVariables[i].toString() + "," + typeVariables[i].getClass().getSuperclass());
-                return typeVariables[i].toString();
-            }
-        }
-        return null;
     }
 
     /**
@@ -465,7 +445,7 @@ public class Sag {
         int len = parameters.length;
         for (int i = 0; i < len; i++) {
             Class parameter = parameters[i];
-            results.add(getClassName(pkgName, parameter, false));
+            results.add(getClassName(pkgName, parameter));
         }
         String[] rtn = new String[results.size()];
         return results.toArray(rtn);

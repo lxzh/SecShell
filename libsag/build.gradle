@@ -5,8 +5,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+sourceCompatibility = "8"
+targetCompatibility = "8"
 
 jar {
     //项目名，也是生成的jar的名字
@@ -15,14 +15,19 @@ jar {
     version = "1.0"
     //项目的manifest定义，其中就包含最关键的入口类定义
     manifest { attributes 'Main-Class': 'com.lxzh123.libsag.Main' }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked"
+    }
 }
 
 build {
     doLast {
         def projectDir = getProjectDir().getAbsolutePath()
+        def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
-        def fromFile = projectDir +"/build/libs/" + fileName
-        def intoFile = projectDir +"/output/"
+        def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
+        def intoFile = projectDir + File.separator + "output" + File.separator
         def jarName = "libsag.jar"
         println("=====================build.doLast start.=========================")
         copy {
@@ -34,8 +39,11 @@ build {
         }
         def outJar = intoFile + jarName
         def cmdInputJar = intoFile + "libcore.jar"
-        //on windows:
-//        commandLine 'java', '-jar', outJar, cmdInputJar
+        println("buildDir=" + getBuildDir())
+        println("outJar=" + outJar)
+        println("cmdInputJar=" + cmdInputJar)
+        def command = "java -jar " + outJar + " " + cmdInputJar
+        command.execute()
         println("=====================build.doLast success.=========================")
     }
 }
