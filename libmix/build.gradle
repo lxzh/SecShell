@@ -22,89 +22,25 @@ task clearJar(type: Delete) {
     println("=====================task clearJar start.=========================")
 }
 
-task prepare() {
-    def proName = getProject().getName()
-    println("=====================" + proName + " task prepare start.=========================")
-    println("=====================" + proName + " task prepare end.=========================")
-}
-
-task makeJar(type: Copy, dependsOn: ':libmix:packageReleaseJar') {
-    println("=====================task makeJar start.=========================")
-
-    def projectDir = getProjectDir().getAbsolutePath()
-    def buildDir = getBuildDir().getAbsolutePath()
-    def fileName = jar.baseName + "-" + jar.version + ".jar"
-    def fromDir = buildDir + File.separator + "libs" + File.separator
-    def fromFile = fromDir + fileName
-    def intoDir = projectDir + File.separator + "output" + File.separator
-    def jarName = "libmix.jar"
-
-    println("fromDir=" + fromDir)
-    println("intoDir=" + intoDir)
-
-    //copy jar file to output directory
-    copy {
-        from fromFile
-        into intoDir
-        rename {
-            jarName
-        }
-    }
-//    from(fromDir)
-//    into(intoDir)
-//    include(fileName)
-//    rename(fileName, jarName)
-    println("=====================task makeJar end.=========================")
-}
-
-task mixDex(dependsOn: ':libmix:makeJar') {
-    println("=====================task mixDex start.=========================")
-    def projectDir = getProjectDir().getAbsolutePath()
-    def jarDir = projectDir + File.separator + "output" + File.separator
-    def jarName = "libmix.jar"
-
-    //exec command to mix dex file
-    def dexName = "libcore.dex"
-    def mixName = "libcore.data"
-    def jarFile = jarDir + jarName
-    def srcFile = jarDir + dexName
-    def dstFile = jarDir + mixName
-    def command = "java -jar " + jarFile + " -en -s " + srcFile + " -d " + dstFile
-    println("command:" + command)
-    command.execute()
-
-    //copy mixed dex file to project(:libshell)
-    def intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
-    copy {
-        from dstFile
-        into intoDir
-        rename {
-            mixName
-        }
-    }
-    println("=====================task mixDex end.=========================")
-}
-
-//makeJar.dependsOn(clearJar, packageReleaseJar)
-
 build {
+    def proName = getProject().getName()
     doLast {
-        println("=====================build.doLast start.=========================")
+        println("=====================" + proName + " task build.doLast start.=======================")
         def projectDir = getProjectDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
         def fromDir = buildDir + File.separator + "libs" + File.separator
         def fromFile = fromDir + fileName
-        def intoDir = projectDir + File.separator + "output" + File.separator
+        def jarDir = projectDir + File.separator + "output" + File.separator
         def jarName = "libmix.jar"
 
         println("fromDir=" + fromDir)
-        println("intoDir=" + intoDir)
+        println("jarDir=" + jarDir)
 
         //copy jar file to output directory
         copy {
             from fromFile
-            into intoDir
+            into jarDir
             rename {
                 jarName
             }
@@ -121,7 +57,10 @@ build {
         command.execute()
 
         //copy mixed dex file to project(:libshell)
-        intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
+        def intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
+        println("dstFile=" + dstFile)
+        println("intoDir=" + intoDir)
+        println("mixName=" + mixName)
         copy {
             from dstFile
             into intoDir
@@ -129,6 +68,8 @@ build {
                 mixName
             }
         }
-        println("=====================build.doLast success.=========================")
+        def mixFile = new File(intoDir + mixName)
+        println("mixFile=" + mixFile.getAbsolutePath() + ", exists=" + mixFile.exists())
+        println("=====================" + proName + " task build.doLast end.=========================")
     }
 }

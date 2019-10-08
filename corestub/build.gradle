@@ -44,12 +44,6 @@ android {
     }
 }
 
-task prepare() {
-    def proName = getProject().getName()
-    println("=====================" + proName + " task prepare start.=========================")
-    println("=====================" + proName + " task prepare end.=========================")
-}
-
 def copyAAR(String fromFile, String intoDir, String aarName) {
     def intoFile = intoDir + aarName
     delete intoFile
@@ -68,62 +62,41 @@ def copyAAR(String fromFile, String intoDir, String aarName) {
     println("aar:" + newFile.getAbsolutePath() + ", exists=" + newFile.exists())
 }
 
-task copyAAR(dependsOn: [':corestub:assembleRelease']) {
-    println("=====================task copyAAR start.=========================")
-    def rootProjectpath = getRootDir().absolutePath
-    def buildDir = getBuildDir().getAbsolutePath()
-    def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
-    def intoDir = rootProjectpath + "/demo/geetestsdk/"
-    def aarName = "corestub.aar"
-    copyAAR(fromFile, intoDir, aarName)
-    println("=====================task copyAAR end.=========================")
-}
-//
-//task copyDebugAAR(dependsOn: ['assembleDebug']){
-//    println("=====================task copyDebugAAR start.=========================")
-//    def rootProjectpath = getRootDir().absolutePath
-//    def buildDir = getBuildDir().getAbsolutePath()
-//    def fileName = "corestub-debug.aar"
-//    def fromFile = buildDir + "/outputs/aar/" + fileName
-//    def intoDir = rootProjectpath+ "/demo/geetestsdk/"
-//    def aarName = "corestub.aar"
-//
-//    copyAAR(fromFile, intoDir, aarName)
-//    println("=====================task copyDebugAAR end.=========================")
-//}
-//
-//task copyReleaseAAR(dependsOn: ['assembleRelease']){
-//    println("=====================task copyReleaseAAR start.=========================")
-//    def rootProjectpath = getRootDir().absolutePath
-//    def buildDir = getBuildDir().getAbsolutePath()
-//    def fileName = "corestub-release.aar"
-//    def fromFile = buildDir + "/outputs/aar/" + fileName
-//    def intoDir = rootProjectpath+ "/demo/geetestsdk/"
-//    def aarName = "corestub.aar"
-//
-//    copyAAR(fromFile, intoDir, aarName)
-//    println("=====================task copyReleaseAAR end.=========================")
-//}
-
-task exec(dependsOn: ':libsag:genStubSdk') {
-    doLast {
-        println("=====================task exec start.=========================")
-        println("=====================task exec start.=========================")
+def static getFileCount(String path) {
+    def file = new File(path)
+    def files = file.listFiles()
+    def total = 0
+    if (files != null) {
+        def len = files.length
+        for (int i = 0; i < len; i++) {
+            if (files[i].directory) {
+                total += getFileCount(files[i].absolutePath)
+            } else {
+                total++
+            }
+        }
     }
+    return total
 }
 
 build {
+    def proName = getProject().getName()
     doLast {
-        println("=====================build.doLast start.=========================")
+        println("=====================" + proName + " task build.doLast start.=======================")
         def rootProjectpath = getRootDir().absolutePath
+        def srcFileDir = getProjectDir().absolutePath + "/src/main/java/"
+        def fileCnt = getFileCount(srcFileDir)
+        println("fileCnt=" + fileCnt)
         def buildDir = getBuildDir().getAbsolutePath()
         def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
         def intoDir = rootProjectpath + "/demo/geetestsdk/"
         def aarName = "corestub.aar"
         copyAAR(fromFile, intoDir, aarName)
-        println("=====================build.doLast end.=========================")
+        println("=====================" + proName + " task build.doLast end.=========================")
     }
 }
+
+build.dependsOn([':libsag:build'])
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

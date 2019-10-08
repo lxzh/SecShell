@@ -40,13 +40,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-task prepare() {
-    def proName = getProject().getName()
-    println("=====================" + proName + " task prepare start.=========================")
-    println("=====================" + proName + " task prepare end.=========================")
-}
-
-task cleanbuild(){
+task cleanbuild() {
     if (getBuildDir().exists()){
         println "============clean build dir "+getBuildDir().absolutePath
         delete getBuildDir().absolutePath
@@ -54,20 +48,20 @@ task cleanbuild(){
 }
 
 build {
+    def proName = getProject().getName()
     doLast {
+        println("=====================" + proName + " task build.doLast start.=======================")
         def projectDir = getProjectDir().getAbsolutePath()
         def releaseName = projectDir + "/build/outputs/libcore-release.aar"
         def debugName = projectDir + "/build/outputs/libcore-debug.aar"
         def fromFile = projectDir +"/build/outputs/" + releaseName
         def intoFile = projectDir +"/output/"
         def jarName = "libmix.jar"
-        println("=====================build.doLast start.=========================")
         println(getName())
         println(getOwner())
         println(getDisplayName())
         println(getDescription())
         println(gradle.startParameter.taskNames)
-        println(build.declaredFields)
         copy {
             from fromFile
             into intoFile
@@ -76,7 +70,7 @@ build {
             }
         }
 
-        println("=====================build.doLast success.=========================")
+        println("=====================" + proName + " task build.doLast end.=========================")
     }
 }
 

@@ -42,18 +42,15 @@ android {
     }
 }
 
-task prepare() {
+build {
     def proName = getProject().getName()
-    println("=====================" + proName + " task prepare start.=========================")
-    println("=====================" + proName + " task prepare end.=========================")
-}
-
-task exec(dependsOn: ':libsag:genStubSdk'){
     doLast {
-        println("=====================task exec start.=========================")
-        println("=====================task exec start.=========================")
+        println("=====================" + proName + " task build.doLast start.=======================")
+        println("=====================" + proName + " task build.doLast end.=========================")
     }
 }
+
+build.dependsOn([':corestub:build', ':libshell:build'])
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

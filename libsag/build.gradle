@@ -21,51 +21,10 @@ jar {
     }
 }
 
-task prepare() {
-    def proName = getProject().getName()
-    println("=====================" + proName + " task prepare start.=========================")
-    println("=====================" + proName + " task prepare end.=========================")
-}
-
-task makeJar(type: Copy, dependsOn: ':libmix:packageReleaseJar') {
-    println("=====================task makeJar start.=========================")
-    //copy jar file to output directory
-    def projectDir = getProjectDir().getAbsolutePath()
-    def buildDir = getBuildDir().getAbsolutePath()
-    def fileName = jar.baseName + "-" + jar.version + ".jar"
-    def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
-    def intoDir = projectDir + File.separator + "output" + File.separator
-    def jarName = "libsag.jar"
-    println("=====================build.doLast start.=========================")
-    copy {
-        from fromFile
-        into intoDir
-        rename {
-            jarName
-        }
-    }
-    println("=====================task makeJar end.=========================")
-}
-
-task genStubSdk(dependsOn: ':libsag:makeJar') {
-    println("=====================task genStubSdk start.=========================")
-    def projectDir = getProjectDir().getAbsolutePath()
-    def jarDir = projectDir + File.separator + "output" + File.separator
-    def jarName = "libsag.jar"
-    def dexJarName = "libcore.jar"
-
-    //exec command to generate source code of stub sdk
-    def jarFile = jarDir + jarName
-    def dexJarFile = jarDir + dexJarName
-    def command = "java -jar " + jarFile + " " + dexJarFile
-    println("command:" + command)
-    command.execute()
-    println("=====================task genStubSdk end.=========================")
-}
-
-//genStubSdk dependsOn: makeJar
 build {
+    def proName = getProject().getName()
     doLast {
+        println("=====================" + proName + " task build.doLast start.=======================")
         //copy jar file to output directory
         def projectDir = getProjectDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
@@ -73,7 +32,6 @@ build {
         def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
         def jarDir = projectDir + File.separator + "output" + File.separator
         def jarName = "libsag.jar"
-        println("=====================build.doLast start.=========================")
         copy {
             from fromFile
             into jarDir
@@ -85,11 +43,13 @@ build {
         def dexJarName = "libcore.jar"
         def jarFile = jarDir + jarName
         def dexJarFile = jarDir + dexJarName
+        def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
         println("jarFile=" + jarFile)
         println("dexJarFile=" + dexJarFile)
-        def command = "java -jar " + jarFile + " " + dexJarFile
+        println("outFolder=" + outFolder)
+        def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder
         println("command:" + command)
         command.execute()
-        println("=====================build.doLast success.=========================")
+        println("=====================" + proName + " task build.doLast end.=========================")
     }
 }
