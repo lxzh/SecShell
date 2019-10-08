@@ -24,6 +24,11 @@ public class BytecodeTypeParseTest {
                 "int[]", "[I",
                 "String", "Ljava/lang/String;",
                 "String[]", "[Ljava/lang/String;",
+                "java.util.Set<Integer>","Ljava/util/Set<Ljava/lang/Integer;>;",
+                "java.util.Set<String>","Ljava/util/Set<Ljava/lang/String;>;",
+                "java.util.Set<int[]>","Ljava/util/Set<[I>;",
+                "java.util.Set<Void[]>","Ljava/util/Set<[Ljava/lang/Void;>;",
+                "java.util.Set<? extends OutClass>","Ljava/util/Set<+Lcom/lxzh123/libcore/OutClass;>;",
                 "java.util.List<String>", "Ljava/util/List<Ljava/lang/String;>;",
                 "java.util.List<int[]>", "Ljava/util/List<[I>;",
                 "java.util.List<? extends A>", "Ljava/util/List<+LA;>;",
@@ -64,12 +69,13 @@ public class BytecodeTypeParseTest {
         assertEquals(4, 2 + 2);
         Sag sag = Sag.get(Logger.get());
         int len = typeMap.length;
-        String pkgName = getClass().getPackage().getName();
+//        String pkgName = getClass().getPackage().getName();
+        String pkgName = "com.lxzh123.libcore";
         int equalCnt = 0;
         for (int i = 0; i < len; i += 2) {
             String expect = typeMap[i];
             String input = typeMap[i + 1];
-            String actual = sag.parseTypeFromSignature(pkgName, input).result;
+            String actual = sag.parseType(pkgName, input);
             if (expect.equals(actual)) {
                 equalCnt++;
             }

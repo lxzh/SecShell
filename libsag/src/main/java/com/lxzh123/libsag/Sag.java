@@ -195,15 +195,17 @@ public class Sag {
                 String cSignature = null;
                 String typeName;
                 if (fSignature != null) {
-                    typeName = getFieldType(pkgName, fSignature);
+                    typeName = parseType(pkgName, fSignature);
                 } else {
                     cSignature = field.getType().getName();
                     if (cSignature != null && cSignature.startsWith("[")) {
-                        typeName = getArrayType(pkgName, cSignature);
+                        /**
+                         * basic array type and the field has no signature
+                         */
+                        typeName = parseType(pkgName, cSignature);
                     } else {
                         typeName = getClassName(pkgName, field.getType(), false);
                     }
-//                    typeName = getClassName(pkgName, field.getType(), false);
                 }
                 logger.d(TAG, "clz=" + clz + ",field=" + field + ",FSignature=" + fSignature + ",CSignature=" + cSignature + ",simpleSig=" + typeName);
                 strBuffer.append(TAB + Modifier.toString(field.getModifiers()) + " " +
@@ -267,13 +269,13 @@ public class Sag {
             }
             String signature = getSignature(Method.class, method);
             logger.d(TAG, "class=" + clz.getSimpleName() + ",method=" + method.getName() +
-                    ",signature=" + signature + ",rtnSignature=" +
-                    (signature != null ? getRtnTypeName(pkgName, signature) : ""));
+                    ",signature=" + signature);
             Class rtnType = method.getReturnType();
             String rtnTypeName = rtnType.getName();
             String rtnTypeStr;
             if (signature != null) {
-                rtnTypeStr = getRtnTypeName(pkgName, signature);
+                String rtnSignature = signature.substring(signature.lastIndexOf(")") + 1);
+                rtnTypeStr = parseType(pkgName, rtnSignature);
             } else {
                 rtnTypeStr = getClassName(pkgName, rtnType, false);
             }
@@ -404,6 +406,11 @@ public class Sag {
         }
     }
 
+    /**
+     * get type variable string
+     * @param clz
+     * @return
+     */
     private String getClassTypeVariableSimple(Class clz) {
         TypeVariable<Class<?>>[] typeVariables = clz.getTypeParameters();
         logger.d(TAG, "clzInfo:" + clz.getCanonicalName() + "," + typeVariables);
@@ -444,162 +451,57 @@ public class Sag {
     }
 
     /**
-     * parse return type name of a method
-     *
+     * parse parameter type array from method or constructor
      * @param pkgName
-     * @param mSignature
+     * @param parameters
      * @return
      */
-    private String getRtnTypeName(String pkgName, String mSignature) {
-        String rtnSignature = mSignature.substring(mSignature.lastIndexOf(")") + 2, mSignature.length() - 1).replace("/", ".");
-        String rtnTypeString = rtnSignature.substring(1);
-        if (rtnSignature.length() == 2) {
-            return rtnTypeString;
-        } else {
-            /**
-             * attention generics type interface method in a interface type, such as:
-             * Class<? extends OutAnnotation> annotationType();
-             * so this is different from parameter of method or constructor and field
-             */
-            if (rtnSignature.contains("<")) {
-                String type = getSimpleClassName(pkgName, rtnSignature.substring(0, rtnSignature.indexOf("<")));
-                TypeVariableItem item = new TypeVariableItem();
-                item.tName = "?";
-                item.parentName = getSimpleClassName(pkgName,
-                        rtnSignature.substring(rtnSignature.indexOf("+") + 2, rtnSignature.length() - 2));
-                return type + "<" + item.toString() + ">";
-            } else {
-                return getSimpleClassName(pkgName, rtnSignature);
-            }
+    public String[] parseParameters(String pkgName, Class[] parameters) {
+        List<String> results = new ArrayList<>();
+        /**
+         * parse the parameter type by normal reflection, if the signature is null, the type just
+         * basic type (eight basic type)
+         */
+        int len = parameters.length;
+        for (int i = 0; i < len; i++) {
+            Class parameter = parameters[i];
+            results.add(getClassName(pkgName, parameter, false));
         }
+        String[] rtn = new String[results.size()];
+        return results.toArray(rtn);
     }
 
     /**
-     * get parameter type array from method or constructor
-     *
+     * parse parameter type array from signature of method or constructor
      * @param pkgName
-     * @param mSignature
+     * @param input parameter signature of method or constructor
      * @return
      */
-    private String[] getParamTypeNames(String pkgName, String mSignature) {
-        String pSignature = mSignature.substring(mSignature.indexOf("(") + 1, mSignature.indexOf(")"));
-        if (pSignature.length() == 0) {
-            return null;
-        }
-        String[] pSignatures = pSignature.replace("/", ".").split(";");
-        int pLen = pSignatures.length;
-        for (int i = 0; i < pLen; i++) {
-            if (pSignatures[i].length() == 2) {
-                pSignatures[i] = pSignatures[i].substring(1);
-            } else {
-                pSignatures[i] = getSimpleClassName(pkgName, pSignatures[i].substring(1));
-            }
-        }
-        return pSignatures;
-    }
-
-    private String getFieldType(String pkgName, String fSignature) {
-        String simpleSig = fSignature.replace("/", ".")
-                .replace(";", ",")
-                .replace(",>", ">");
-        simpleSig = simpleSig.substring(0, simpleSig.length() - 1);//remove last ','
-        StringBuffer buff = new StringBuffer();
-        int len = simpleSig.length();
-        int idx = 1;
-        int start = 0;
-        char ch, cs;
-        String typeSig;
-        String typeName;
-        ///TODO
+    public String[] parseParameters(String pkgName, String input) {
+        int len = input.length();
+        int idx = 0;
+        List<String> results = new ArrayList<>();
         while (idx < len) {
-            cs = simpleSig.charAt(start);
-            while ((cs == '<' || cs == '>' || cs == ',' || cs == '+') && start < len - 1) {
-                cs = simpleSig.charAt(++start);
-            }
-            ch = simpleSig.charAt(idx);
-            switch (ch) {
-                case '<':
-                case '>':
-                case ',':
-                    if (idx - start > 0) {
-                        if (idx - start > 2) {
-                            if (cs == '[') {
-                                typeSig = simpleSig.substring(start + 2, idx);
-                            } else {
-                                typeSig = simpleSig.substring(start + 1, idx);
-                            }
-                            typeName = getSimpleClassName(pkgName, typeSig);
-                            buff.append(typeName);
-                        } else if (idx - start > 1) {
-                            typeSig = simpleSig.substring(start + 1, idx);
-                            typeName = getBasicType(typeSig.charAt(0));
-                            if (typeName != null) {
-                                buff.append(typeName);
-                            } else {
-                                buff.append(typeSig);
-                            }
-                        } else {
-
-                        }
-                        if (cs == '[') {
-                            buff.append("[]");
-                        }
-                    }
-                    buff.append(ch);
-                    start = idx++;
-                    break;
-                case '+':
-                    buff.append("? extends ");
-                    start = idx++;
-                    break;
-                case '[':
-                    if (cs != '[') {
-                        idx++;
-                    } else {
-                        start = idx++;
-                    }
-                    break;
-                default:
-                    if (cs == '[' && idx - start == 1) {
-                        String tmp = getBasicType(ch);
-                        if (tmp != null) {
-                            buff.append(tmp + "[]");
-                            start = idx++;
-                            if (idx < len) {
-                                ch = simpleSig.charAt(idx);
-                                if (ch == 'L' || ch == '[') {
-                                    buff.append(",");
-                                }
-                            }
-                        } else {
-                            idx++;
-                        }
-                    } else {
-                        idx++;
-                    }
-                    break;
-            }
+            String tmpInput = input.substring(idx);
+            ParseItem item = parseSignature(pkgName, tmpInput);
+            idx += item.parseLength;
+            results.add(item.result);
         }
-        if (idx - start >= 2) {
-            typeSig = simpleSig.substring(start + 1, idx);
-            typeName = getSimpleClassName(pkgName, typeSig);
-            buff.append(typeName);
-        }
-        return buff.toString().replace(BASE_PACKAGE + ".", "").replace(pkgName + ".", "");
+        String[] rtn = new String[results.size()];
+        return results.toArray(rtn);
     }
 
-    private String getArrayType(String pkgName, String signature) {
-        String typeStr = signature.substring(1);
-        String typeName;
-        if (typeStr.length() == 1) {
-            typeName = getBasicType(typeStr.charAt(0));
-        } else {
-            typeName = getSimpleClassName(pkgName, typeStr.substring(1, typeStr.length() - 1));
-        }
-        return typeName + "[]";
+    public String parseType(String pkgName, String input) {
+        return parseSignature(pkgName, input).result;
     }
 
-    public ParseItem parseTypeFromSignature(String pkgName, String input) {
+    /**
+     * parse type from signature of field or method
+     * @param pkgName
+     * @param input signature of field or return signature of method
+     * @return
+     */
+    private ParseItem parseSignature(String pkgName, String input) {
         String signature = input.replace("/", ".");
         int idx = 0;
         char ch;
@@ -622,11 +524,7 @@ public class Sag {
                 case 'J'://long
                 case 'F'://float
                 case 'D'://double
-                    if (refIdx >= 0) {
-
-                    } else if (colIdx >= 0) {
-
-                    } else {
+                    if (refIdx < 0 && colIdx < 0) {
                         String tmpType = getBasicType(ch);
                         if (tmpType != null) {
                             buff.append(tmpType);
@@ -653,7 +551,6 @@ public class Sag {
                         String tmpType = getSimpleClassName(pkgName, signature.substring(refIdx + 1, idx));
                         if (lastRef) {
                             buff.append(", ");
-                            lastRef = false;
                         }
                         buff.append(tmpType);
                         refIdx = -1;
@@ -662,7 +559,6 @@ public class Sag {
                         String tmpType = getSimpleClassName(pkgName, signature.substring(genIdx + 1, idx));
                         if (lastRef) {
                             buff.append(", ");
-                            lastRef = false;
                         }
                         buff.append(tmpType);
                         genIdx = -1;
@@ -680,7 +576,6 @@ public class Sag {
                         String tmpType = signature.substring(refIdx + 1, idx);
                         buff.append(tmpType + "<");
                         refIdx = -1;
-//                        colIdx = idx;
                     }
 
                     int end = signature.lastIndexOf(">");
@@ -689,11 +584,11 @@ public class Sag {
                     }
                     if (end > idx) {
                         String subSig = signature.substring(idx + 1, end);
-                        ParseItem item = parseTypeFromSignature(pkgName, subSig);
+                        ParseItem item = parseSignature(pkgName, subSig);
                         String subType = item.result;
                         if (item.parseLength < subSig.length()) {
                             String rightSig = signature.substring(idx + 1 + item.parseLength, end);
-                            ParseItem right = parseTypeFromSignature(pkgName, rightSig);
+                            ParseItem right = parseSignature(pkgName, rightSig);
                             String rightType = right.result;
                             if (rightType.equals(">")) {
                                 buff.append(subType + rightType);
@@ -722,16 +617,15 @@ public class Sag {
                     buff.append("? extends ");
                     break;
                 case '['://array start
-                    int arrLen = getArrayLen(signature, idx);
+                    int arrLen = getDimensions(signature, idx);
                     for (int i = 0; i < arrLen; i++) {
                         arr += "[]";
                     }
                     String subSig = signature.substring(idx + arrLen);
-                    ParseItem item = parseTypeFromSignature(pkgName, subSig);
+                    ParseItem item = parseSignature(pkgName, subSig);
                     String subType = item.result;
                     if (lastRef) {
                         buff.append(", ");
-                        lastRef = false;
                     }
                     buff.append(subType + arr);
                     idx += item.parseLength;
@@ -747,7 +641,13 @@ public class Sag {
         return new ParseItem(buff.toString(), idx, idx < len);
     }
 
-    private int getArrayLen(String signature, int idx) {
+    /**
+     * get dimensions of multidimensional array
+     * @param signature
+     * @param idx
+     * @return
+     */
+    private int getDimensions(String signature, int idx) {
         int len = signature.length();
         int i = idx;
         for (; i < len; i++) {
@@ -767,36 +667,32 @@ public class Sag {
      * @return
      */
     private String getParameter(String pkgName, String signature, Class[] parameters) {
-        /**
-         * if signature is not null, we parse the parameter type from signature to distinguish type
-         * name from Object and T
-         */
         StringBuffer strBuffer = new StringBuffer();
+        String[] params;
         if (signature != null) {
-            String[] params = getParamTypeNames(pkgName, signature);
-            if (params != null) {
-                int len = params.length;
-                for (int i = 0; i < len; i++) {
-                    strBuffer.append(params[i] + " arg" + i);
-                    if (i < len - 1) {
-                        strBuffer.append(", ");
-                    }
-                }
-                return strBuffer.toString();
-            }
+            /**
+             * if signature is not null, we parse the parameter type from signature to distinguish type
+             * name from Object and T
+             */
+            String pSignature = signature.substring(signature.indexOf("(") + 1, signature.indexOf(")"));
+//            String[] params = getParamTypeNames(pkgName, pSignature);
+            params = parseParameters(pkgName, pSignature);
+        } else {
+            /**
+             * parse the parameter type by normal reflection, if the signature is null, the type just
+             * basic type (eight basic type)
+             */
+            params = parseParameters(pkgName, parameters);
         }
-
-        /**
-         * parse the parameter type by normal reflection, if the signature is null, the type just
-         * basic type (eight basic type)
-         */
-        int len = parameters.length;
-        for (int i = 0; i < len; i++) {
-            Class parameter = parameters[i];
-            strBuffer.append(getClassName(pkgName, parameter, false) + " arg" + i);
-            if (i < len - 1) {
-                strBuffer.append(", ");
+        if (params != null) {
+            int len = params.length;
+            for (int i = 0; i < len; i++) {
+                strBuffer.append(params[i] + " arg" + i);
+                if (i < len - 1) {
+                    strBuffer.append(", ");
+                }
             }
+            return strBuffer.toString();
         }
         return strBuffer.length() == 0 ? null : strBuffer.toString();
     }
@@ -850,7 +746,7 @@ public class Sag {
     }
 
     private void writeBufferToFile(StringBuffer buffer, String fileName) {
-        logger.d(TAG, "writeBufferToFile:fileName:" + fileName);
+        //logger.d(TAG, "writeBufferToFile:fileName:" + fileName);
         File file = new File(fileName);
         if (file.exists()) {
             file.delete();
