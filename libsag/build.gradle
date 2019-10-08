@@ -23,26 +23,29 @@ jar {
 
 build {
     doLast {
+        //copy jar file to output directory
         def projectDir = getProjectDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
         def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
-        def intoFile = projectDir + File.separator + "output" + File.separator
+        def intoDir = projectDir + File.separator + "output" + File.separator
         def jarName = "libsag.jar"
         println("=====================build.doLast start.=========================")
         copy {
             from fromFile
-            into intoFile
+            into intoDir
             rename {
                 jarName
             }
         }
-        def outJar = intoFile + jarName
-        def cmdInputJar = intoFile + "libcore.jar"
+        //exec command to generate source code of stub sdk
+        def outJar = intoDir + jarName
+        def cmdInputJar = intoDir + "libcore.jar"
         println("buildDir=" + getBuildDir())
         println("outJar=" + outJar)
         println("cmdInputJar=" + cmdInputJar)
         def command = "java -jar " + outJar + " " + cmdInputJar
+        println("command:" + command)
         command.execute()
         println("=====================build.doLast success.=========================")
     }

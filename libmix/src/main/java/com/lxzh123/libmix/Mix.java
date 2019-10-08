@@ -14,9 +14,9 @@ public class Mix {
     private static final int MASK = 0xAA;
 
     /**
-     * java -jar -en -s srcFile -d dstFile
-     * java -jar -de -s srcFile -d dstFile
-     * java -jar -cm -s srcFile -d dstFile
+     * java -jar libmix.jar -en -s srcFile -d dstFile
+     * java -jar libmix.jar -de -s srcFile -d dstFile
+     * java -jar libmix.jar -cm -s srcFile -d dstFile
      *
      * @param args
      */

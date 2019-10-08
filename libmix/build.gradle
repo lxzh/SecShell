@@ -4,8 +4,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+sourceCompatibility = "8"
+targetCompatibility = "8"
 
 jar {
     //项目名，也是生成的jar的名字
@@ -18,35 +18,42 @@ jar {
 
 build {
     doLast {
+        //copy jar file to output directory
         def projectDir = getProjectDir().getAbsolutePath()
+        def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
-        def fromFile = projectDir +"/build/libs/" + fileName
-        def intoFile = projectDir +"/output/"
+        def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
+        def intoDir = projectDir + File.separator + "output" + File.separator
         def jarName = "libmix.jar"
-        println("fromFile:"+fromFile+" intoFile:"+intoFile)
-        println(fileName)
-        println(getRootProject())
-        println(getProject())
-        println(getPath())
-        println(getParent())
-        println(getRootDir())
-        println(getBuildDir())
-        println(getName())
-        println(getDisplayName())
-        println(getProjectDir())
-        def applicationId = android.defaultConfig.applicationId
-        def versionName = android.defaultConfig.versionName
-        def time = new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
-        def buildType = "release"
-        def channel = "site"
+        println("=====================build.doLast start.=========================")
         copy {
             from fromFile
-            into intoFile
+            into intoDir
             rename {
                 jarName
             }
         }
 
+        //exec command to mix dex file
+        def dexName = "libcore.dex"
+        def mixName = "libcore.data"
+        def outJar = intoDir + jarName
+        def srcFile = intoDir + dexName
+        def dstFile = intoDir + mixName
+        def command = "java -jar " + outJar + " -en -s " + srcFile + " -d " + dstFile
+        println("command:" + command)
+        command.execute()
+
+        //copy mixed dex file to project(:dexinjector)
+        new File()
+        intoDir = getRootDir().getAbsolutePath() + "/dexinjector/src/main/assets/"
+        copy {
+            from dstFile
+            into intoDir
+            rename {
+                mixName
+            }
+        }
         println("=====================build.doLast success.=========================")
     }
 }
