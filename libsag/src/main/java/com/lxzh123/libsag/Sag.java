@@ -267,6 +267,7 @@ public class Sag {
                     (NORMAL_METHOD.contains(method.getName()))) {
                 continue;
             }
+
             String signature = getSignature(Method.class, method);
             logger.d(TAG, "class=" + clz.getSimpleName() + ",method=" + method.getName() +
                     ",signature=" + signature);
@@ -338,6 +339,8 @@ public class Sag {
             rtnName = clz.getSimpleName();
         } else if (clzName.startsWith(pkgName) && clzName.lastIndexOf(".") == pkgName.length()) {
             rtnName = clz.getSimpleName();
+        } else if(clzName.contains(";")||clzName.contains("[")){
+            rtnName = parseType(pkgName, clzName);
         } else {
             rtnName = clzName;
         }
