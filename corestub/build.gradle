@@ -81,19 +81,19 @@ def static getFileCount(String path) {
 }
 
 build {
-    def proName = getProject().getName()
+    def taskName = getProject().getName() + " " + getName()
     doLast {
-        println("=====================" + proName + " task build.doLast start.=======================")
-        def rootProjectpath = getRootDir().absolutePath
+        println("=====================" + taskName + " doLast start.=======================")
+        def rootDir = getRootDir().absolutePath
         def srcFileDir = getProjectDir().absolutePath + "/src/main/java/"
         def fileCnt = getFileCount(srcFileDir)
         println("fileCnt=" + fileCnt)
         def buildDir = getBuildDir().getAbsolutePath()
         def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
-        def intoDir = rootProjectpath + "/demo/geetestsdk/"
+        def intoDir = rootDir + "/demo/geetestsdk/"
         def aarName = "corestub.aar"
         copyAAR(fromFile, intoDir, aarName)
-        println("=====================" + proName + " task build.doLast end.=========================")
+        println("=====================" + taskName + " doLast end.=========================")
     }
 }
 

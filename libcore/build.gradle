@@ -1,5 +1,12 @@
 apply plugin: 'com.android.library'
 
+ext {
+    sdkJarName = "${SDK_JAR_NAME}"
+    sdkDexName = "${SDK_DEX_NAME}"
+    sdkMixName = "${SDK_MIX_NAME}"
+    sdkFolder = "${SDK_FOLDER}"
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -48,14 +55,15 @@ task cleanbuild() {
 }
 
 build {
-    def proName = getProject().getName()
+    def taskName = getProject().getName() + " " + getName()
     doLast {
-        println("=====================" + proName + " task build.doLast start.=======================")
+        println("=====================" + taskName + " doLast start.=======================")
+        def rootDir = getRootDir().getAbsolutePath()
         def projectDir = getProjectDir().getAbsolutePath()
         def releaseName = projectDir + "/build/outputs/libcore-release.aar"
         def debugName = projectDir + "/build/outputs/libcore-debug.aar"
         def fromFile = projectDir +"/build/outputs/" + releaseName
-        def intoFile = projectDir +"/output/"
+        def intoFile = rootDir + File.separator + sdkFolder + File.separator
         def jarName = "libmix.jar"
         println(getName())
         println(getOwner())
@@ -70,7 +78,7 @@ build {
             }
         }
 
-        println("=====================" + proName + " task build.doLast end.=========================")
+        println("=====================" + taskName + " doLast end.=========================")
     }
 }
 

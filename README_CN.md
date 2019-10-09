@@ -63,7 +63,12 @@ gradle libsag:build
 
 2. 使用sag生成stub-sdk源文件
 
-**TODO**
+
+```
+gradle sag:build
+```
+
+编译sag来执行生成stub-sdk任务, 编译脚本会自动完成拷贝jar包与dex包到链接的手机或者模拟器，安装sag应用并生成不带函数实现的java文件到stub工程到`/sdcard/sdkshell/sdk`目录，然后通过adb命令pull到corestub源码目录:`corestub/src/main/java/`.第一次运行app时请赋予应用sdcard存储权限.
 
 - 编译stub-sdk
 

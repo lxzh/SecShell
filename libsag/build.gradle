@@ -8,6 +8,13 @@ dependencies {
 sourceCompatibility = "8"
 targetCompatibility = "8"
 
+ext {
+    sdkJarName = "${SDK_JAR_NAME}"
+    sdkDexName = "${SDK_DEX_NAME}"
+    sdkMixName = "${SDK_MIX_NAME}"
+    sdkFolder = "${SDK_FOLDER}"
+}
+
 jar {
     //项目名，也是生成的jar的名字
     baseName = "libsag"
@@ -19,18 +26,20 @@ jar {
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked"
     }
+
+    sdkFolder = "${SDK_FOLDER}"
 }
 
 build {
-    def proName = getProject().getName()
+    def taskName = getProject().getName() + " " + getName()
     doLast {
-        println("=====================" + proName + " task build.doLast start.=======================")
+        println("=====================" + taskName + " doLast start.=======================")
         //copy jar file to output directory
-        def projectDir = getProjectDir().getAbsolutePath()
+        def rootDir = getRootDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
         def fileName = jar.baseName + "-" + jar.version + ".jar"
         def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
-        def jarDir = projectDir + File.separator + "output" + File.separator
+        def jarDir = rootDir + File.separator + sdkFolder + File.separator
         def jarName = "libsag.jar"
         copy {
             from fromFile
@@ -40,17 +49,18 @@ build {
             }
         }
         //exec command to generate source code of stub sdk
-        def dexJarName = "libcore.jar"
         def jarFile = jarDir + jarName
-        def dexJarFile = jarDir + dexJarName
+        def dexJarFile = jarDir + sdkJarName
         def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
         println("jarFile=" + jarFile + ",exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)
         def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder
         println("command:" + command)
-        command.execute()
-        //println(command.execute().text.trim())
-        println("=====================" + proName + " task build.doLast end.=========================")
+//        command.execute()
+        command.execute().text.trim()
+//        println(command.execute().text.trim())
+        sleep(5000)
+        println("=====================" + taskName + " doLast end.=========================")
     }
 }

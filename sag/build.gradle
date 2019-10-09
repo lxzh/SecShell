@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+ext {
+    defaultAvdName = "${AVD_NAME}"
+    sdkJarName = "${SDK_JAR_NAME}"
+    sdkDexName = "${SDK_DEX_NAME}"
+    sdkMixName = "${SDK_MIX_NAME}"
+    sdkFolder = "${SDK_FOLDER}"
+    sdcardWorkspace = "${SDCARD_WORKSPACE}"
+    sdcardOutPath = "${SDCARD_OUT_PATH}"
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -11,7 +21,10 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-
+        buildConfigField "String", "WORKSPACE", "\"${SDCARD_WORKSPACE}\""
+        buildConfigField "String", "OUTPUT_FOLDER", "\"${SDCARD_OUT_PATH}\""
+        buildConfigField "String", "SDK_JAR_NAME", "\"${sdkJarName}\""
+        buildConfigField "String", "SDK_DEX_NAME", "\"${sdkDexName}\""
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -26,7 +39,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
 }
 
 dependencies {
@@ -38,4 +50,89 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':libsag')
+}
+
+def getAdbDevices() {
+    def cmd = "adb devices"
+    def rst = cmd.execute().text.trim()
+    def rsts = rst.split('\n')
+    def len = rsts.length
+    def avdList = new ArrayList<String>()
+    def targetAVDName = ""
+//    println("adb devices result:")
+    for (int i = 1; i < len; i++) {
+        def items = rsts[i].split()
+//        print("items.length=" + items.length + ":")
+        if (items.length == 2 && items[1].equals("device")) {
+            avdList.add(items[0])
+        }
+    }
+    if (avdList.size() == 0) {
+        println("Please connect a device!!!")
+    } else if (avdList.size() > 1) {
+        println("Please connect only one device or specify an avd name!!!")
+    } else {
+        targetAVDName = avdList.get(0)
+    }
+    return targetAVDName
+}
+
+def execmd(String cmd) {
+    println("command:" + cmd)
+    def rst = cmd.execute().text.trim()
+    println("rst=" + rst)
+}
+
+build {
+    def taskName = getProject().getName() + " " + getName()
+//    getAdbDevices()
+    doLast {
+        println("=====================" + taskName + " doLast start.=======================")
+        //copy jar file to output directory
+        def rootDir = getRootDir().getAbsolutePath()
+        def buildDir = getBuildDir().getAbsolutePath()
+        def apkName = getProject().getName() + "-debug.apk"
+        def apkFile = buildDir + "/outputs/apk/debug/" + apkName
+        def actName = "com.lxzh123.sag/com.lxzh123.sag.MainActivity"
+        def sdkPath = rootDir + File.separator + sdkFolder
+        def outputSrcFolder = rootDir + "/corestub/src/main/java"
+//        def avdName = project.getProperties().get('AVD_NAME')
+        def avdName = defaultAvdName.replace("\"", "")
+        println("avdName=" + avdName + ", length=" + avdName.length())
+        if (avdName.length() < 1) {
+            avdName = getAdbDevices()
+        }
+        if (avdName.length() < 1) {
+            return
+        }
+        println("avdName=" + avdName + ", length=" + avdName.length())
+        def jarFile = sdkPath + File.separator + "" + sdkJarName
+        def dexFile = sdkPath + File.separator + "" + sdkDexName
+        def sdcardPath = sdcardWorkspace
+
+        //create work folder
+        def cmd = "adb -s " + avdName + " shell mkdir " + sdcardPath
+        execmd(cmd)
+
+        //clear work folder
+        cmd = "adb -s " + avdName + " shell rm -rf " + sdcardPath + "*"
+        execmd(cmd)
+
+        //push jar and dex to work folder
+        cmd = "adb -s " + avdName + " push " + jarFile + " " + sdcardPath
+        execmd(cmd)
+        cmd = "adb -s " + avdName + " push " + dexFile + " " + sdcardPath
+        execmd(cmd)
+
+        //install apk and run
+        cmd = "adb -s " + avdName + " install -r -t " + apkFile
+        execmd(cmd)
+        cmd = "adb -s " + avdName + " shell am start -n \"" + actName + "\" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER"
+        execmd(cmd)
+
+        sleep(3000)
+
+        cmd = "adb -s " + avdName + " pull " + sdcardOutPath + " " + outputSrcFolder
+        execmd(cmd)
+    }
 }

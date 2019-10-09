@@ -39,10 +39,10 @@ android {
 }
 
 build {
-    def proName = getProject().getName()
+    def taskName = getProject().getName() + " " + getName()
     doLast {
-        println("=====================" + proName + " task build.doLast start.=======================")
-        println("=====================" + proName + " task build.doLast end.=========================")
+        println("=====================" + taskName + " doLast start.=======================")
+        println("=====================" + taskName + " doLast end.=========================")
     }
 }
 

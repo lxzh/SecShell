@@ -61,7 +61,11 @@ build libsag to generate stub-sdk, the build script will automatically parse the
 
 2. use `sag` to generate stub-sdk source file
 
-**TODO**
+```
+gradle sag:build
+```
+
+build sag to perform the stub-sdk generation task, the build script will automatically the build script will automatically copy the jar package and dex package to the linked mobile phone or emulator, install the sag application and  generate Java files without function implementation to `/sdcard/sdkshell/sdk` directory, and then pull to the corestub source code directory through adb command :`corestub/src/main/java/`
 
 - build stub sdk
 
