@@ -51,6 +51,7 @@ def copyAAR(String fromFile, String intoDir, String aarName) {
     println("intoDir=" + intoDir)
     println("aarName=" + aarName)
     println("fromFile:" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("before copy, aar=" + intoFile + ", exists=" + (new File(intoFile).exists()))
     copy {
         from fromFile
         into intoDir
@@ -59,7 +60,7 @@ def copyAAR(String fromFile, String intoDir, String aarName) {
         }
     }
     def newFile = new File(intoFile)
-    println("aar:" + newFile.getAbsolutePath() + ", exists=" + newFile.exists())
+    println("after copy, aar:" + newFile.getAbsolutePath() + ", exists=" + newFile.exists() + ", size=" + newFile.length())
 }
 
 def static getFileCount(String path) {

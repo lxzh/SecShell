@@ -44,12 +44,13 @@ build {
         def jarFile = jarDir + jarName
         def dexJarFile = jarDir + dexJarName
         def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
-        println("jarFile=" + jarFile)
+        println("jarFile=" + jarFile + ",exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)
         def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder
         println("command:" + command)
         command.execute()
+        //println(command.execute().text.trim())
         println("=====================" + proName + " task build.doLast end.=========================")
     }
 }
