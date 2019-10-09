@@ -1,9 +1,9 @@
-package com.lxzh123.shell;
+package com.lxzh123.libshell;
 
 import android.content.Context;
 
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.lxzh123.shell", appContext.getPackageName());
+        assertEquals("com.lxzh123.libshell.test", appContext.getPackageName());
     }
 }

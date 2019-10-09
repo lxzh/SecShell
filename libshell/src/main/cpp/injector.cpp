@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
-#define JNIREG_CLASS "com/lxzh123/shell/Helper"   //指定要注册的类
+#define JNIREG_CLASS "com/lxzh123/libshell/Helper"   //指定要注册的类
 
 int g_sdk_int = 0;
 bool g_isArt = false;

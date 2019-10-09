@@ -1,8 +1,10 @@
-package com.lxzh123.shell;
+package com.lxzh123.sdkshellapp;
 
 import android.app.Application;
 import android.content.Context;
 import android.util.Log;
+
+import com.lxzh123.libshell.Loader;
 
 public class App extends Application {
 

@@ -1,4 +1,4 @@
-package com.lxzh123.shell;
+package com.lxzh123.libshell;
 
 import org.junit.Test;
 
