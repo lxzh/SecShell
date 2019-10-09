@@ -81,7 +81,9 @@ public class Sag {
                         if (myClass == null) {
                             continue;
                         }
-
+                        if(ppName.startsWith("android.support")) {
+                            continue;
+                        }
                         StringBuffer buffer = new StringBuffer();
                         String fileName = exportJavaInfo(myClass, buffer, outPath);
                         writeBufferToFile(buffer, fileName);
@@ -166,7 +168,7 @@ public class Sag {
         /**
          * parse fields in class or interface, attention the difference between enum and other type
          */
-        Field[] fields = clz.getFields();
+        Field[] fields = clz.getDeclaredFields();
         int fLen = fields.length;
         if (clz.isEnum()) {
             /**
@@ -191,6 +193,9 @@ public class Sag {
              */
             for (int i = 0; i < fLen; i++) {
                 Field field = fields[i];
+                if(!Modifier.isPublic(field.getModifiers())) {
+                    continue;
+                }
                 String fSignature = getSignature(Field.class, field);
                 String cSignature = null;
                 String typeName;
@@ -225,12 +230,15 @@ public class Sag {
         /**
          * parse constructor
          */
-        Constructor[] constructors = clz.getConstructors();
+        Constructor[] constructors = clz.getDeclaredConstructors();
         int cLen = constructors.length;
         if (cLen > 0) {
             boolean hasNoneDefaultCtor = false;
             for (int i = 0; i < cLen; i++) {
                 Constructor constructor = constructors[i];
+                if(!Modifier.isPublic(constructor.getModifiers())) {
+                    continue;
+                }
                 if (constructor.getParameterTypes().length > 0) {
                     hasNoneDefaultCtor = true;
                     break;
@@ -242,6 +250,9 @@ public class Sag {
             if (hasNoneDefaultCtor) {
                 for (int i = 0; i < cLen; i++) {
                     Constructor constructor = constructors[i];
+                    if(!Modifier.isPublic(constructor.getModifiers())) {
+                        continue;
+                    }
                     String signature = getSignature(Constructor.class, constructor);
                     strBuffer.append(TAB + Modifier.toString(constructor.getModifiers()) + " " +
                             clz.getSimpleName() + "(");
@@ -258,10 +269,13 @@ public class Sag {
         /**
          * parse methods in class
          */
-        Method[] methods = clz.getMethods();
+        Method[] methods = clz.getDeclaredMethods();
         int mLen = methods.length;
         for (int i = 0; i < mLen; i++) {
             Method method = methods[i];
+            if(!Modifier.isPublic(method.getModifiers())) {
+                continue;
+            }
             //filter basic method in object or basic enum
             if ((clz.isEnum() && ENUM_METHOD.contains(method.getName())) ||
                     (NORMAL_METHOD.contains(method.getName()))) {
@@ -339,7 +353,7 @@ public class Sag {
             rtnName = clz.getSimpleName();
         } else if (clzName.startsWith(pkgName) && clzName.lastIndexOf(".") == pkgName.length()) {
             rtnName = clz.getSimpleName();
-        } else if(clzName.contains(";")||clzName.contains("[")){
+        } else if (clzName.contains(";") || clzName.contains("[")) {
             rtnName = parseType(pkgName, clzName);
         } else {
             rtnName = clzName;
@@ -435,6 +449,7 @@ public class Sag {
 
     /**
      * parse parameter type array from method or constructor
+     *
      * @param pkgName
      * @param parameters
      * @return
@@ -456,8 +471,9 @@ public class Sag {
 
     /**
      * parse parameter type array from signature of method or constructor
+     *
      * @param pkgName
-     * @param input parameter signature of method or constructor
+     * @param input   parameter signature of method or constructor
      * @return
      */
     public String[] parseParameters(String pkgName, String input) {
@@ -480,8 +496,9 @@ public class Sag {
 
     /**
      * parse type from signature of field or method
+     *
      * @param pkgName
-     * @param input signature of field or return signature of method
+     * @param input   signature of field or return signature of method
      * @return
      */
     private ParseItem parseSignature(String pkgName, String input) {
@@ -626,6 +643,7 @@ public class Sag {
 
     /**
      * get dimensions of multidimensional array
+     *
      * @param signature
      * @param idx
      * @return
