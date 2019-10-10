@@ -13,8 +13,8 @@ class Main {
     /**
      * default output folder for debug use, input it from the command for normal use
      */
-//    private final static String OUTPUT_FOLDER = "D:\\Android\\Code\\SecShell\\corestub\\src\\main\\java";
-    private final static String OUTPUT_FOLDER = "/Users/a1239848066/Develop/AS/SecShell/corestub/src/main/java";
+    private final static String OUTPUT_FOLDER = "D:\\Android\\Code\\SecShell\\corestub\\src\\main\\java";
+//    private final static String OUTPUT_FOLDER = "/Users/a1239848066/Develop/AS/SecShell/corestub/src/main/java";
 
     /**
      * java -jar libsag.jar srcJar outputFolder
@@ -23,7 +23,7 @@ class Main {
      *             1: output folder of generated java file
      */
     public static void main(String[] args) {
-        args= new String[]{"/Users/a1239848066/Develop/AS/SecShell/sdk/classes.jar"};
+//        args = new String[]{"D:\\\\Android\\\\Code\\\\SecShell\\\\sdk\\geeguardsdk.jar"};
 //        args= new String[]{"D:\\Android\\Code\\SecShell\\sdk\\libcore.jar"};
 //        args= new String[]{"/Users/a1239848066/Develop/AS/SecShell/sdk/libcore.jar"};
         if (args.length < 1) {
@@ -49,14 +49,8 @@ class Main {
         } catch (Exception ex) {
 
         }
-        URL url1 = null;
-        try {
-            url1 = new URL("file:" + "D:\\Android\\Code\\SecShell\\sdk\\android.jar");
-        } catch (Exception ex) {
-
-        }
         if (url != null) {
-            URLClassLoader myClassLoader = new URLClassLoader(new URL[]{url, url1}, Thread.currentThread().getContextClassLoader());
+            URLClassLoader myClassLoader = new URLClassLoader(new URL[]{url}, Thread.currentThread().getContextClassLoader());
             Sag.get(Logger.get()).generateSdkApi(folder, filepath, myClassLoader);
         }
     }

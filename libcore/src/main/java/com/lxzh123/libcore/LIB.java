@@ -1,5 +1,8 @@
 package com.lxzh123.libcore;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 public class LIB {
     private static volatile LIB instance;
 
@@ -12,6 +15,14 @@ public class LIB {
             }
         }
         return instance;
+    }
+
+    public <T extends Comparable> Future<T> submit(Callable<T> task) {
+        return null;
+    }
+
+    public <T> Future<T> submit(Callable<T> task, T object) {
+        return null;
     }
 
     public int square(int x) {
