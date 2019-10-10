@@ -90,7 +90,7 @@ public class Sag {
                             continue;
                         }
 //                        /**
-//                         * 非公开类
+//                         * non public class
 //                         */
 //                        if (myClass.getModifiers() == 0) {
 //                            continue;
