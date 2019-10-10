@@ -10,8 +10,6 @@ targetCompatibility = "8"
 
 ext {
     sdkJarName = "${SDK_JAR_NAME}"
-    sdkDexName = "${SDK_DEX_NAME}"
-    sdkMixName = "${SDK_MIX_NAME}"
     sdkFolder = "${SDK_FOLDER}"
 }
 
@@ -26,8 +24,6 @@ jar {
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked"
     }
-
-    sdkFolder = "${SDK_FOLDER}"
 }
 
 build {

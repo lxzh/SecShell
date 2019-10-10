@@ -48,27 +48,13 @@ gradle libmix:build
 - 生成stub-sdk
 
 为了隐藏我们sdk的关键代码并且确保用户能够正常开发，我们提供了stub-sdk的方式供用户compileOnly引用，实际sdk通过shell工具进行脱壳加载。
-
-本方案中生成stub-sdk基于java的反射原理，通过加载sdk的aar包中中jar/dex文件来生成空的java类，由于类加载过程同时需要加载sdk中引用的import包，对于普通的java-library，依赖的是java原生包，可以在PC端生成；对于android-library，依赖Android框架，需要在Android中生成。
-
-所以生成stub-sdk提供了libsag与sag两个工程。前者为jar，使用java中的URLClassLoader来加载jar包，反射生成stub；后者是Android app，使用Android的DexClassLoader加载dex包，同时引用libsag通过JarFile解析jar包提取文件结构，反射生成stub。
-
-1. 使用libsag生成stub-sdk源文件
+生成stub-sdk基于java的反射原理，通过加载sdk的aar包中中jar文件来生成空的java类。
 
 ```
 gradle libsag:build
 ```
 
 编译libsag来执行生成stub-sdk任务, 编译脚本会自动完成解析jar包并且写入不带函数实现的java文件到stub工程corestub源码目录:`corestub/src/main/java/`
-
-2. 使用sag生成stub-sdk源文件
-
-
-```
-gradle sag:build
-```
-
-编译sag来执行生成stub-sdk任务, 编译脚本会自动完成拷贝jar包与dex包到链接的手机或者模拟器，安装sag应用并生成不带函数实现的java文件到stub工程到`/sdcard/sdkshell/sdk`目录，然后通过adb命令pull到corestub源码目录:`corestub/src/main/java/`.第一次运行app时请赋予应用sdcard存储权限.
 
 - 编译stub-sdk
 

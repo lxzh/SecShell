@@ -21,6 +21,7 @@ import java.util.jar.JarFile;
 public class Sag {
     private final static List<String> NORMAL_METHOD = Arrays.asList(new String[]{"wait", "equals", "notify", "notifyAll", "toString", "hashCode", "getClass"});
     private final static List<String> ENUM_METHOD = Arrays.asList(new String[]{"values", "valueOf", "name", "compareTo", "getDeclaringClass", "ordinal", "getSharedConstants"});
+    private final static List<String> EXCLUDE_PACKAGE = Arrays.asList(new String[]{"android.support"});
     private final static int BASIC_TYPE_COUNT = 9;
     private final static String[] BASIC_TYPE = {"byte", "short", "int", "long", "boolean", "char", "float", "double", "void"};
     private final static char[] BASIC_TYPE_BYTE_CODE = {'B', 'S', 'I', 'J', 'Z', 'C', 'F', 'D', 'V'};
@@ -85,7 +86,7 @@ public class Sag {
                         if (myClass == null) {
                             continue;
                         }
-                        if (ppName.startsWith("android.support")) {
+                        if (excludeClass(ppName)) {
                             continue;
                         }
 //                        /**
@@ -116,6 +117,15 @@ public class Sag {
         for (int i = 0; i < errCnt; i++) {
             logger.d(TAG, "getApiMethod:class:" + errorClasses.get(i));
         }
+    }
+
+    private boolean excludeClass(String clzName) {
+        for (String pkgName : EXCLUDE_PACKAGE) {
+            if (clzName.contains(pkgName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String exportJavaInfo(Class clz, StringBuffer strBuffer, String PAD, boolean isInnerClz) {
@@ -195,14 +205,19 @@ public class Sag {
              * parse enum item
              */
             strBuffer.append(PAD + TAB);
+            int cnt = 0;
             for (int i = 0; i < fLen; i++) {
                 Field field = fields[i];
-                strBuffer.append(field.getName());
-                if (i < fLen - 1) {
+                if(Modifier.isPrivate(field.getModifiers())) {
+                    continue;
+                }
+                if (cnt > 0) {
                     strBuffer.append(", ");
                 }
+                strBuffer.append(field.getName());
+                cnt++;
             }
-            if (fLen > 0) {
+            if (cnt > 0) {
                 strBuffer.append("\n");
             } else {
                 strBuffer.append(";\n");
@@ -273,9 +288,9 @@ public class Sag {
                 if (constructor.isSynthetic()) {
                     continue;
                 }
-//                if (!Modifier.isPublic(constructor.getModifiers())) {
-//                    continue;
-//                }
+                if (clz.isEnum() && !Modifier.isPublic(constructor.getModifiers())) {
+                    continue;
+                }
                 if (constructor.getParameterTypes().length > 0) {
                     hasNoneDefaultCtor = true;
                     break;
@@ -290,9 +305,9 @@ public class Sag {
                     if (constructor.isSynthetic()) {
                         continue;
                     }
-//                    if (!Modifier.isPublic(constructor.getModifiers())) {
-//                        continue;
-//                    }
+                    if (clz.isEnum() && !Modifier.isPublic(constructor.getModifiers())) {
+                        continue;
+                    }
                     String signature = getSignature(Constructor.class, constructor);
                     String modifiers = Modifier.toString(constructor.getModifiers());
                     strBuffer.append(PAD + TAB + modifiers + (modifiers.length() > 0 ? " " : "") +
@@ -455,6 +470,7 @@ public class Sag {
 
     /**
      * replace special charactor for type class name
+     *
      * @param clzName
      * @return
      */
