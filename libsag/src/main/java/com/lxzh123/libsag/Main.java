@@ -24,7 +24,7 @@ class Main {
      */
     public static void main(String[] args) {
 //        args = new String[]{"D:\\\\Android\\\\Code\\\\SecShell\\\\sdk\\geeguardsdk.jar"};
-        args= new String[]{"D:\\Android\\Code\\SecShell\\sdk\\libcore.jar"};
+//        args= new String[]{"D:\\Android\\Code\\SecShell\\sdk\\libcore.jar"};
 //        args= new String[]{"/Users/a1239848066/Develop/AS/SecShell/sdk/libcore.jar"};
         if (args.length < 1) {
             System.out.println("add a filepath to extract api");

@@ -95,12 +95,6 @@ public class Sag {
 //                        if (myClass.getModifiers() == 0) {
 //                            continue;
 //                        }
-                        /**
-                         * inner class
-                         */
-                        if (myClass.getName().contains("$")) {
-                            continue;
-                        }
                         StringBuffer buffer = new StringBuffer();
                         String fileName = outPath + File.separator + exportJavaInfo(myClass, buffer, "", false);
                         writeBufferToFile(buffer, fileName);
@@ -124,6 +118,12 @@ public class Sag {
             if (clzName.contains(pkgName)) {
                 return true;
             }
+        }
+        /**
+         * inner class
+         */
+        if (clzName.contains("$")) {
+            return true;
         }
         return false;
     }

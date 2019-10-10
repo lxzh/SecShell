@@ -43,6 +43,8 @@ captures/
 .idea/libraries
 .idea/caches
 
+.project
+
 app/.cxx
 libshell/.cxx
 
