@@ -1,5 +1,11 @@
 apply plugin: 'com.android.library'
 
+ext {
+    sdkDexName = "${SDK_DEX_NAME}"
+    sdkMixName = "${SDK_MIX_NAME}"
+    demoLibDir = "${DEMO_LIB_FOLDER}"
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -13,6 +19,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
+
+        buildConfigField "String", "SDK_DEX_NAME", "\"${sdkDexName}\""
+        buildConfigField "String", "SDK_MIX_NAME", "\"${sdkMixName}\""
 
         externalNativeBuild {
             cmake {
@@ -42,6 +51,21 @@ build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
         println("=====================" + taskName + " doLast start.=======================")
+        //copy aar file to demo libs directory
+        def rootDir = getRootDir().getAbsolutePath()
+        def buildDir = getBuildDir().getAbsolutePath()
+        def fileName = "libshell-debug.aar"
+        def fromFile = buildDir + "/outputs/aar/" + fileName
+        def libDir = demoLibDir
+        def aarName = "libshell.aar"
+        copy {
+            from fromFile
+            into libDir
+            rename {
+                aarName
+            }
+        }
+        println("aarName=" + aarName + ", exists=" + (new File(aarName).exists()))
         println("=====================" + taskName + " doLast end.=========================")
     }
 }

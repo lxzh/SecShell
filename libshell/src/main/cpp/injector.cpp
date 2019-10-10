@@ -15,17 +15,33 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
+const char* PKG_NAME = "com/lxzh123/libshell";
 #define JNIREG_CLASS "com/lxzh123/libshell/Helper"   //指定要注册的类
 
 int g_sdk_int = 0;
 bool g_isArt = false;
 char g_priv_dir[256] = {0};
 const char *g_file_dir = nullptr;
-#define MAGIC       ".shell"
-#define DAT_NAME    "libcore.data"
-#define TAR_NAME    "libcore.dex"
+const char BUILD_CONFIG[] = "/BuildConfig";
+#define MAGIC            ".shell"
+const char* DAT_NAME =   "libcore.data";
+const char* TAR_NAME =   "libcore.dex";
 
 void inject_dex(JNIEnv *env, jobject ctx, const char *dex_path);
+
+char *get_config_class_name(JNIEnv *env, jstring pkg_name) {
+    int pkg_name_len = env->GetStringLength(pkg_name);
+    char *config_name = (char *) env->GetStringUTFChars(pkg_name, NULL);
+
+    strcat(config_name, BUILD_CONFIG);
+    for (int i = 0; i < pkg_name_len; i++) {
+        if (config_name[i] == '.') {
+            config_name[i] = '/';
+        }
+    }
+
+    return config_name;
+}
 
 extern "C"
 JNIEXPORT jstring JNICALL Helper_init
@@ -39,9 +55,30 @@ JNIEXPORT jstring JNICALL Helper_init
                                                  "()Ljava/lang/String;");
     jstring data_file_dir = static_cast<jstring>(env->CallObjectMethod(File_obj, getAbsolutePath));
 
+    jmethodID getPackageNameMethod = env->GetMethodID(ApplicationClass, "getPackageName",
+                                                      "()Ljava/lang/String;");
+    jstring pkg_name = static_cast<jstring >( env->CallObjectMethod(ctx, getPackageNameMethod));
+    char *c_pkg_name = (char *) env->GetStringUTFChars(pkg_name, NULL);
+    char *config_name = get_config_class_name(env, env->NewStringUTF(PKG_NAME));
+//    char *config_name = get_config_class_name();
+    LOGD("[+] pkgName:%s configName:%s", c_pkg_name, config_name);
+
+    jclass BuildConfigClass = env->FindClass(config_name);
+    jfieldID sdkDexNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_DEX_NAME", "Ljava/lang/String;");
+    jfieldID sdkMixNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_MIX_NAME", "Ljava/lang/String;");
+
+    jstring dexName = (jstring)env->GetStaticObjectField(BuildConfigClass, sdkDexNameFieldId);
+    jstring mixName = (jstring)env->GetStaticObjectField(BuildConfigClass, sdkMixNameFieldId);
+    LOGD("[+] dexName:%s mixName:%s", env->GetStringUTFChars(dexName, NULL), env->GetStringUTFChars(mixName, NULL));
+
+    DAT_NAME = env->GetStringUTFChars(mixName, NULL);
+    TAR_NAME = env->GetStringUTFChars(dexName, NULL);
+
+    LOGD("[+] DAT_NAME:%s TAR_NAME:%s", DAT_NAME, TAR_NAME);
+
     g_file_dir = env->GetStringUTFChars(data_file_dir, NULL);
     //g_file_dir_backup=g_file_dir;
-    LOGD("[+]FilesDir:%s", g_file_dir);
+    LOGD("[+] FilesDir:%s", g_file_dir);
     env->DeleteLocalRef(data_file_dir);
     env->DeleteLocalRef(File_obj);
     env->DeleteLocalRef(FileClass);

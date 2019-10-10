@@ -5,8 +5,6 @@ import android.content.res.AssetManager;
 import android.os.Build;
 import android.util.Log;
 
-import com.lody.turbodex.TurboDex;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,7 +40,6 @@ public class Loader {
 
     public static void init(Context context) {
         printClassLoaderInfo(context);
-        TurboDex.enableTurboDex();
 
         boolean initInJni = true;
         boolean injectInJni = true;

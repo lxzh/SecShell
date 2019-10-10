@@ -60,10 +60,13 @@ extract_file_and_decrypt(JNIEnv *env, jobject ctx, const char *szDexPath, const 
     jobject Assets_obj = env->CallObjectMethod(ctx, getAssets);
     AAssetManager *mgr = AAssetManager_fromJava(env, Assets_obj);
     if (mgr == NULL) {
-        LOGE("[-]getAAssetManager failed");
+        LOGE("[-] getAAssetManager failed");
         return 0;
     }
     AAsset *asset = AAssetManager_open(mgr, fileName, AASSET_MODE_STREAMING);
+    if(!asset) {
+        LOGE("[-] AAssetManager_open file:%s failed", fileName);
+    }
     int bufferSize = AAsset_getLength(asset);
 
     FILE *file = fopen(szDexPath, "wb");

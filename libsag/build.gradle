@@ -11,6 +11,7 @@ targetCompatibility = "8"
 ext {
     sdkJarName = "${SDK_JAR_NAME}"
     sdkFolder = "${SDK_FOLDER}"
+    stubSrcDir = "${SDK_STUB_SRC_FOLDER}"
 }
 
 jar {
@@ -47,8 +48,11 @@ build {
         //exec command to generate source code of stub sdk
         def jarFile = jarDir + jarName
         def dexJarFile = jarDir + sdkJarName
-        def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
-        println("jarFile=" + jarFile + ",exists=" + (new File(jarFile).exists()))
+//        def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
+        def outFolder = stubSrcDir
+//        def outFolder = "D:/Work/DeepKnowAndroid/geeguardsdkstub/src/main/java/"
+
+        println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)
         def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder

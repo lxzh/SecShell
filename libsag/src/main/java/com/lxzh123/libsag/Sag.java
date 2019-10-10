@@ -21,7 +21,7 @@ import java.util.jar.JarFile;
 public class Sag {
     private final static List<String> NORMAL_METHOD = Arrays.asList(new String[]{"wait", "equals", "notify", "notifyAll", "toString", "hashCode", "getClass"});
     private final static List<String> ENUM_METHOD = Arrays.asList(new String[]{"values", "valueOf", "name", "compareTo", "getDeclaringClass", "ordinal", "getSharedConstants"});
-    private final static List<String> EXCLUDE_PACKAGE = Arrays.asList(new String[]{"android.support"});
+    private final static List<String> EXCLUDE_PACKAGE = Arrays.asList(new String[]{"android.support", "BuildConfig"});
     private final static int BASIC_TYPE_COUNT = 9;
     private final static String[] BASIC_TYPE = {"byte", "short", "int", "long", "boolean", "char", "float", "double", "void"};
     private final static char[] BASIC_TYPE_BYTE_CODE = {'B', 'S', 'I', 'J', 'Z', 'C', 'F', 'D', 'V'};
@@ -89,12 +89,6 @@ public class Sag {
                         if (excludeClass(ppName)) {
                             continue;
                         }
-//                        /**
-//                         * non public class
-//                         */
-//                        if (myClass.getModifiers() == 0) {
-//                            continue;
-//                        }
                         StringBuffer buffer = new StringBuffer();
                         String fileName = outPath + File.separator + exportJavaInfo(myClass, buffer, "", false);
                         writeBufferToFile(buffer, fileName);
