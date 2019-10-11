@@ -1,9 +1,7 @@
 apply plugin: 'com.android.library'
 
 ext {
-    sdkJarName = "${SDK_JAR_NAME}"
-    sdkDexName = "${SDK_DEX_NAME}"
-    sdkMixName = "${SDK_MIX_NAME}"
+    sdkAarName = "${SDK_AAR_NAME}"
     sdkFolder = "${SDK_FOLDER}"
 }
 
@@ -20,21 +18,6 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable = true
-            jniDebuggable = true
-            renderscriptDebuggable = true
-        }
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable = true
-            jniDebuggable = true
-        }
-    }
 
 }
 
@@ -54,34 +37,37 @@ task cleanbuild() {
     }
 }
 
+def copyFile(String fromFile, String intoDir, String fileName) {
+    def intoFile = intoDir + fileName
+    if (new File(intoFile).exists()) {
+        delete intoFile
+    }
+    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("intoDir=" + intoDir)
+    println("fileName=" + fileName)
+    println("before copy, file=" + intoFile + ", exists=" + (new File(intoFile).exists()))
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            fileName
+        }
+    }
+    def newFile = new File(intoFile)
+    println(" after copy, file=" + newFile.getAbsolutePath() + ", exists=" + newFile.exists() + ", size=" + newFile.length())
+}
+
 build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
         println("=====================" + taskName + " doLast start.=======================")
         def rootDir = getRootDir().getAbsolutePath()
-        def projectDir = getProjectDir().getAbsolutePath()
-        def releaseName = projectDir + "/build/outputs/libcore-release.aar"
-        def debugName = projectDir + "/build/outputs/libcore-debug.aar"
-        def fromFile = projectDir +"/build/outputs/" + releaseName
-        def intoFile = rootDir + File.separator + sdkFolder + File.separator
-        def jarName = "libmix.jar"
-        println(getName())
-        println(getOwner())
-        println(getDisplayName())
-        println(getDescription())
-        println(gradle.startParameter.taskNames)
-        copy {
-            from fromFile
-            into intoFile
-            rename {
-                jarName
-            }
-        }
-
+        def buildDir = getBuildDir().getAbsolutePath()
+//        def aarName = "libcore-release.aar"
+        def aarName = "libcore-debug.aar"
+        def fromFile = buildDir +"/outputs/aar/" + aarName
+        def intoDir = rootDir + File.separator + sdkFolder + File.separator
+        copyFile(fromFile, intoDir, sdkAarName)
         println("=====================" + taskName + " doLast end.=========================")
     }
-}
-
-task aarRelease(type: Copy) {
-    println rootProject.rootDir
 }

@@ -55,6 +55,7 @@ public class Sag {
 
     public void generateSdkApi(String outPath, String jarFile, ClassLoader classLoader) {
         List<String> errorClasses = new ArrayList<>();
+        int successCnt = 0;
         try {
             //parse jar by JarFile to get the JarEntry, then get all class
             JarFile jar = new JarFile(jarFile);//"D:/sip-test.jar"
@@ -91,12 +92,18 @@ public class Sag {
                         }
                         StringBuffer buffer = new StringBuffer();
                         String fileName = outPath + File.separator + exportJavaInfo(myClass, buffer, "", false);
+                        successCnt++;
                         writeBufferToFile(buffer, fileName);
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            logger.e(TAG, "generateSdkApi Exception:" + e.getMessage());
+            StackTraceElement[] traces = e.getStackTrace();
+            for (int i = 0; i < traces.length; i++) {
+                logger.e(TAG, "Exception:" + traces[i].toString());
+            }
         }
         int errCnt = errorClasses.size();
         if (errCnt > 0) {
@@ -105,6 +112,7 @@ public class Sag {
         for (int i = 0; i < errCnt; i++) {
             logger.d(TAG, "getApiMethod:class:" + errorClasses.get(i));
         }
+        logger.d(TAG, "getApiMethod:success count:" + successCnt);
     }
 
     private boolean excludeClass(String clzName) {
@@ -202,7 +210,7 @@ public class Sag {
             int cnt = 0;
             for (int i = 0; i < fLen; i++) {
                 Field field = fields[i];
-                if(Modifier.isPrivate(field.getModifiers())) {
+                if (Modifier.isPrivate(field.getModifiers())) {
                     continue;
                 }
                 if (cnt > 0) {

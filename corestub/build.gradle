@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 
+ext {
+    sdkAarName = "${SDK_AAR_NAME}"
+    demoLibFolder = "${DEMO_LIB_FOLDER}"
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -15,52 +20,26 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//            libraryVariants.all { variant ->
-//                variant.outputs.all { output ->
-//                    def fileName
-//                    if (variant.buildType.name.equals('release')) {
-//                        fileName = "corestub-release.aar"
-//                    } else if (variant.buildType.name.equals('debug')) {
-//                        fileName = "corestub-debug.aar"
-//                    }
-//                    outputFileName = fileName
-//                }
-//            }
-//            libraryVariants.whenObjectAdded { variant ->
-//                variant.outputs.all { output ->
-//                    println("variant:" + variant)
-//                    println("variant.outputs:" + variant.outputs)
-//                    println("variant.buildType:" + variant.buildType)
-//                    println("variant.buildType.name:" + variant.buildType.name)
-//                    def fileName = "corestub.aar"
-//                    outputFileName = fileName
-//                }
-//            }
-        }
-    }
 }
 
-def copyAAR(String fromFile, String intoDir, String aarName) {
-    def intoFile = intoDir + aarName
-    delete intoFile
-    println("fromFile=" + fromFile)
+def copyFile(String fromFile, String intoDir, String fileName) {
+    def intoFileName = intoDir + fileName
+    def intoFile = new File(intoFileName)
+    if (intoFile.exists()) {
+        intoFile.delete()
+    }
+    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
     println("intoDir=" + intoDir)
-    println("aarName=" + aarName)
-    println("fromFile:" + fromFile + ", exists=" + (new File(fromFile).exists()))
-    println("before copy, aar=" + intoFile + ", exists=" + (new File(intoFile).exists()))
+    println("fileName=" + fileName)
+    println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())
     copy {
         from fromFile
         into intoDir
         rename {
-            aarName
+            fileName
         }
     }
-    def newFile = new File(intoFile)
-    println("after copy, aar:" + newFile.getAbsolutePath() + ", exists=" + newFile.exists() + ", size=" + newFile.length())
+    println(" after copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists() + ", size=" + intoFile.length())
 }
 
 def static getFileCount(String path) {
@@ -84,15 +63,12 @@ build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
         println("=====================" + taskName + " doLast start.=======================")
-        def rootDir = getRootDir().absolutePath
         def srcFileDir = getProjectDir().absolutePath + "/src/main/java/"
         def fileCnt = getFileCount(srcFileDir)
         println("fileCnt=" + fileCnt)
         def buildDir = getBuildDir().getAbsolutePath()
-        def fromFile = buildDir + "/outputs/aar/corestub-release.aar"
-        def intoDir = rootDir + "/demo/geetestsdk/"
-        def aarName = "corestub.aar"
-        copyAAR(fromFile, intoDir, aarName)
+        def fromFile = buildDir + "/outputs/aar/corestub-debug.aar"
+        copyFile(fromFile, demoLibFolder, sdkAarName)
         println("=====================" + taskName + " doLast end.=========================")
     }
 }

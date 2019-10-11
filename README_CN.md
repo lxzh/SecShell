@@ -14,7 +14,7 @@ gradle libcore:build
 
 - 解压aar
 
-解压sdk编译生成的aar文件: `libcore/build/outputs/aar/libcore-release.aar`, 从aar包中提取jar文件：`libcore.jar`, 拷贝到`libsag/output`目录用于后续生成stub-sdk
+解压sdk编译生成的aar文件: `libcore/build/outputs/aar/libcore.aar`, 从aar包中提取jar文件：`libcore.jar`, 拷贝到`libsag/output`目录用于后续生成stub-sdk
 
 - jar转换为dex
 

@@ -41,8 +41,8 @@ build {
     }
 }
 
-lint.dependsOn([':corestub:build'])
-build.dependsOn([':corestub:build', ':libshell:build'])
+//lint.dependsOn([':corestub:build'])
+//build.dependsOn([':corestub:build', ':libshell:build'])
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -52,6 +52,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    compileOnly files('geetestsdk\\corestub.aar')
-    implementation project(':libshell')
+    compileOnly files('geetestsdk\\geeguardsdk.aar')
+    compileOnly files('geetestsdk\\libcore.aar')
+    implementation files('geetestsdk\\libshell.aar')
 }

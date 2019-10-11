@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 ext {
     sdkDexName = "${SDK_DEX_NAME}"
     sdkMixName = "${SDK_MIX_NAME}"
-    demoLibDir = "${DEMO_LIB_FOLDER}"
+    sdkFolder = "${SDK_FOLDER}"
 }
 
 android {
@@ -56,11 +56,11 @@ build {
         def buildDir = getBuildDir().getAbsolutePath()
         def fileName = "libshell-debug.aar"
         def fromFile = buildDir + "/outputs/aar/" + fileName
-        def libDir = demoLibDir
+        def sdkDir = rootDir + File.separator + sdkFolder
         def aarName = "libshell.aar"
         copy {
             from fromFile
-            into libDir
+            into sdkDir
             rename {
                 aarName
             }
@@ -69,8 +69,6 @@ build {
         println("=====================" + taskName + " doLast end.=========================")
     }
 }
-
-build.dependsOn([':libmix:build'])
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

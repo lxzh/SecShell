@@ -3,15 +3,20 @@ apply plugin: 'java-library'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
+    implementation 'org.apache.commons:commons-compress:1.19'
 }
 
 sourceCompatibility = "8"
 targetCompatibility = "8"
 
 ext {
+    sdkAarName = "${SDK_AAR_NAME}"
     sdkJarName = "${SDK_JAR_NAME}"
+    sdkDexName = "${SDK_DEX_NAME}"
     sdkFolder = "${SDK_FOLDER}"
+    shellAarName = "${SHELL_NAME}"
     stubSrcDir = "${SDK_STUB_SRC_FOLDER}"
+    dex2jarDir = "${DEX2JAR_TOOL_FOLDER}"
 }
 
 jar {
@@ -27,39 +32,131 @@ jar {
     }
 }
 
+task copyJar(type: Copy) {
+    from configurations.runtime
+    into('build/libs/lib')
+}
+
+def unzip(String jar, String libs, String zipFile, String outPath) {
+    def cmd = "java -jar -Djava.ext.dirs=" + libs + " " + jar + " unzip " + zipFile + " " + outPath
+    println("command:" + cmd)
+    println(cmd.execute().text.trim())
+}
+
+def jar2dex(String d2jPath, String jarFile, String dexFile) {
+    def dex = new File(dexFile)
+    if (dex.exists()) {
+        dex.delete()
+    }
+    def cmd = d2jPath + " " + jarFile + " -o " + dexFile + " --force"
+    println("command:" + cmd)
+    cmd.execute()
+}
+
+def copyFile(String fromFile, String intoDir, String fileName) {
+    def intoFileName = intoDir + fileName
+    def intoFile = new File(intoFileName)
+    if (intoFile.exists()) {
+        intoFile.delete()
+    }
+    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("intoDir=" + intoDir)
+    println("fileName=" + fileName)
+    println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            fileName
+        }
+    }
+    println(" after copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists() + ", size=" + intoFile.length())
+}
+
+def delPath(String path) {
+    def dir = new File(path)
+    def files = dir.listFiles()
+    for (File file : files) {
+        if (file.isFile()) {
+            file.delete()
+        } else {
+            delPath(file.getAbsolutePath())
+        }
+    }
+}
+
+def getFileCount(String path) {
+    def file = new File(path)
+    def files = file.listFiles()
+    def total = 0
+    if (files != null) {
+        def len = files.length
+        for (int i = 0; i < len; i++) {
+            if (files[i].directory) {
+                total += getFileCount(files[i].absolutePath)
+            } else {
+                total++
+            }
+        }
+    }
+    return total
+}
+
 build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
         println("=====================" + taskName + " doLast start.=======================")
-        //copy jar file to output directory
+        println("step 1: copy jar file to sdk directory=======================")
+        //copy jar file to sdk directory
         def rootDir = getRootDir().getAbsolutePath()
         def buildDir = getBuildDir().getAbsolutePath()
+        def sdkDir = rootDir + File.separator + sdkFolder + File.separator
         def fileName = jar.baseName + "-" + jar.version + ".jar"
         def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
-        def jarDir = rootDir + File.separator + sdkFolder + File.separator
         def jarName = "libsag.jar"
-        copy {
-            from fromFile
-            into jarDir
-            rename {
-                jarName
-            }
-        }
-        //exec command to generate source code of stub sdk
-        def jarFile = jarDir + jarName
-        def dexJarFile = jarDir + sdkJarName
-//        def outFolder = getRootDir().absolutePath + "/corestub/src/main/java/"
-        def outFolder = stubSrcDir
-//        def outFolder = "D:/Work/DeepKnowAndroid/geeguardsdkstub/src/main/java/"
+        copyFile(fromFile, sdkDir, jarName)
+        def jarFile = sdkDir + jarName
 
+        def libDir = sdkDir + "libs"
+        println("step 2: unzip sdk aar=======================")
+        //unzip sdk aar
+        def sdkFile = sdkDir + sdkAarName
+        def sdkUnzipPath = sdkDir + "sdk" + File.separator
+        delPath(sdkUnzipPath)
+        unzip(jarFile, libDir, sdkFile, sdkUnzipPath)
+        sleep(1000)
+        println("step 3: unzip shell aar=======================")
+        //unzip sdk aar
+        def shellFile = sdkDir + shellAarName
+        def shellUnzipPath = sdkDir + "shell" + File.separator
+        delPath(shellUnzipPath)
+        unzip(jarFile, libDir, shellFile, shellUnzipPath)
+        sleep(1000)
+
+        println("step 4: copy sdk jar to sdk directory=======================")
+        //copy jar in aar to sdk directory
+        def jarInAar = sdkUnzipPath + "classes.jar"
+        copyFile(jarInAar, sdkDir, sdkJarName)
+        def dexJarFile = sdkDir + sdkJarName
+
+        println("step 5: transform sdk jar to dex=======================")
+        //transform sdk jar to dex
+        def dex2jarFile = dex2jarDir + "d2j-jar2dex.bat"
+        def dexFile = sdkDir + sdkDexName
+        jar2dex(dex2jarFile, dexJarFile, dexFile)
+        println("dexFile=" + dexFile + ", exists=" + (new File(dexFile).exists()))
+
+        println("step 6: generate stub sdk=======================")
+        //exec command to generate source code of stub sdk
+        def outFolder = stubSrcDir
         println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)
-        def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder
+        def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder + " " + libDir
         println("command:" + command)
-//        command.execute()
-        command.execute().text.trim()
-//        println(command.execute().text.trim())
+        command.execute()
+        def fileCnt = getFileCount(outFolder)
+        println("java file count:" + fileCnt)
         sleep(5000)
         println("=====================" + taskName + " doLast end.=========================")
     }

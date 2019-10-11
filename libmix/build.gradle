@@ -12,6 +12,8 @@ ext {
     sdkDexName = "${SDK_DEX_NAME}"
     sdkMixName = "${SDK_MIX_NAME}"
     sdkFolder = "${SDK_FOLDER}"
+    shellAarName = "${SHELL_NAME}"
+    demoLibFolder = "${DEMO_LIB_FOLDER}"
 }
 
 jar {
@@ -29,6 +31,32 @@ task clearJar(type: Delete) {
     println("=====================task clearJar start.=========================")
 }
 
+def copyFile(String fromFile, String intoDir, String fileName) {
+    def intoFileName = intoDir + fileName
+    def intoFile = new File(intoFileName)
+    if (intoFile.exists()) {
+        intoFile.delete()
+    }
+    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("intoDir=" + intoDir)
+    println("fileName=" + fileName)
+    println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            fileName
+        }
+    }
+    println(" after copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists() + ", size=" + intoFile.length())
+}
+
+def repackAAR(String path, String aarFile) {
+    def cmd = "jar cvfM " + aarFile + " -C " + path + " ."
+    println("command:" + cmd)
+    cmd.execute()
+}
+
 build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
@@ -38,45 +66,34 @@ build {
         def fileName = jar.baseName + "-" + jar.version + ".jar"
         def fromDir = buildDir + File.separator + "libs" + File.separator
         def fromFile = fromDir + fileName
-        def jarDir = rootDir + File.separator + sdkFolder + File.separator
+        def sdkDir = rootDir + File.separator + sdkFolder + File.separator
         def jarName = "libmix.jar"
 
-        println("fromDir=" + fromDir)
-        println("jarDir=" + jarDir)
-
         //copy jar file to output directory
-        copy {
-            from fromFile
-            into jarDir
-            rename {
-                jarName
-            }
-        }
+        copyFile(fromFile, sdkDir, jarName)
 
         //exec command to mix dex file
-        def dexName = "libcore.dex"
-        def mixName = "libcore.data"
-        def jarFile = jarDir + jarName
-        def srcFile = jarDir + dexName
-        def dstFile = jarDir + mixName
+        def jarFile = sdkDir + jarName
+        def srcFile = sdkDir + sdkDexName
+        def dstFile = sdkDir + sdkMixName
         def command = "java -jar " + jarFile + " -en -s " + srcFile + " -d " + dstFile
         println("command:" + command)
         command.execute()
 
-        //copy mixed dex file to project(:libshell)
-        def intoDir = getRootDir().getAbsolutePath() + "/libshell/src/main/assets/"
-        println("dstFile=" + dstFile)
-        println("intoDir=" + intoDir)
-        println("mixName=" + mixName)
-        copy {
-            from dstFile
-            into intoDir
-            rename {
-                mixName
-            }
-        }
-        def mixFile = new File(intoDir + mixName)
-        println("mixFile=" + mixFile.getAbsolutePath() + ", exists=" + mixFile.exists())
+        //copy mixed dex file to shell/assets for using of repack aar
+        def intoDir = sdkDir + "shell/assets/"
+        copyFile(dstFile, intoDir, sdkMixName)
+
+        def shellDir = sdkDir + "shell"
+        def newShellAar = sdkDir + "libshell_new.aar"
+        repackAAR(shellDir, newShellAar)
+        def newShellFile = new File(newShellAar)
+        println("file=" + newShellFile.getAbsolutePath() + ", exists=" + newShellFile.exists() + ", size=" + newShellFile.length())
+
+        sleep(1000)
+        //copy new aar to demo
+        copyFile(newShellFile.getAbsolutePath(), demoLibFolder, shellAarName)
+
         println("=====================" + taskName + " doLast end.=========================")
     }
 }

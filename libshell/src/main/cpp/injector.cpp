@@ -24,8 +24,8 @@ char g_priv_dir[256] = {0};
 const char *g_file_dir = nullptr;
 const char BUILD_CONFIG[] = "/BuildConfig";
 #define MAGIC            ".shell"
-const char* DAT_NAME =   "libcore.data";
-const char* TAR_NAME =   "libcore.dex";
+const char* DAT_NAME =   ".data";
+const char* TAR_NAME =   ".dex";
 
 void inject_dex(JNIEnv *env, jobject ctx, const char *dex_path);
 

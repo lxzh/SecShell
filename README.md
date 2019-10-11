@@ -14,7 +14,7 @@ gradle libcore:build
 
 - unzip aar
 
-unzip the release sdk aar in `libcore/build/outputs/aar/libcore-release.aar`, get the jar `libcore.jar` file in the aar package, copy libcore.jar to `libsag/output` for generating stub-sdk
+unzip the release sdk aar in `libcore/build/outputs/aar/libcore.aar`, get the jar `libcore.jar` file in the aar package, copy libcore.jar to `libsag/output` for generating stub-sdk
 
 - jar to dex
 

@@ -20,13 +20,13 @@ public class Loader {
 
     private final static String TAG = "Loader";
 
-    public final static String ASSETS_RES_NAME = "libcore.data";
+    public final static String ASSETS_RES_NAME = BuildConfig.SDK_MIX_NAME;
     /**
      * can't load non optimization jar package, so a classes.jar in aar package need to convert to
      * dex package with dx tool in android sdk : dx --dex --output=target.dex classes.jar
      * or d2j-jar2dex.bat: d2j-jar2dex.bat classes.jar -o target.dex
      */
-    public final static String TARGET_DEX_NAME = "libcore.dex";
+    public final static String TARGET_DEX_NAME = BuildConfig.SDK_DEX_NAME;
 
     public final static int SDK_VERSION = Build.VERSION.SDK_INT;
 
@@ -46,7 +46,7 @@ public class Loader {
 
         String path = prepare(context, initInJni, injectInJni);
 //        testLoadJar(context, path);
-        if(!injectInJni) {
+        if (!injectInJni) {
             injectDex(context, path);
         }
         printClassLoaderInfo(context);
@@ -54,7 +54,7 @@ public class Loader {
 
     private static String prepare(Context context, boolean initInJni, boolean injectInJni) {
         String dexPath;
-        if(initInJni) {
+        if (initInJni) {
             dexPath = Helper.init(context, injectInJni);
         } else {
             File filesDir = context.getFilesDir();
@@ -149,7 +149,7 @@ public class Loader {
             Object obj = getMethod.invoke(LIB);
             int rst = (Integer) squareMethod.invoke(obj, 5);
             Log.d(TAG, "testLoadJar rst:" + rst);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             Log.d(TAG, "testLoadJar Exception:" + ex.getMessage());
             ex.printStackTrace();
         }
