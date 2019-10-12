@@ -1,7 +1,5 @@
 package com.lxzh123.libsag;
 
-import android.os.FileUtils;
-
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
@@ -126,6 +124,8 @@ public final class ZipUtil {
     }
 
     public static void unzip(File zipFile, String descDir) {
+        int foldCnt = 0;
+        int fileCnt = 0;
         try (ZipArchiveInputStream inputStream = getZipFile(zipFile)) {
             File pathFile = new File(descDir);
             if (!pathFile.exists()) {
@@ -136,7 +136,8 @@ public final class ZipUtil {
                 if (entry.isDirectory()) {
                     File directory = new File(descDir, entry.getName());
                     directory.mkdirs();
-                    Logger.get().i("mkdir:", directory.getAbsolutePath());
+                    Logger.get().d("mkdir:", directory.getAbsolutePath());
+                    foldCnt++;
                 } else {
                     OutputStream os = null;
                     try {
@@ -147,7 +148,8 @@ public final class ZipUtil {
                         while (-1 != (len = inputStream.read(bufer))) {
                             os.write(bufer, 0, len);
                         }
-                        Logger.get().i("file:", descDir + File.separator + entry.getName());
+                        Logger.get().d("file:", descDir + (descDir.endsWith(File.separator) ? "" : File.separator) + entry.getName());
+                        fileCnt++;
                         IOUtils.copy(inputStream, os);
                     } finally {
                         IOUtils.closeQuietly(os);
@@ -159,6 +161,7 @@ public final class ZipUtil {
             Logger.get().e(TAG, "unzip Exception:" + e.getMessage());
 //            LOG.error("[unzip] unzip failed", e);
         }
+        Logger.get().i(TAG, "unzip finished, get folder count=" + foldCnt + " and file count=" + fileCnt);
     }
 
     private static ZipArchiveInputStream getZipFile(File zipFile) throws Exception {

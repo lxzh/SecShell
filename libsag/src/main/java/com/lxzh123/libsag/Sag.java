@@ -107,12 +107,12 @@ public class Sag {
         }
         int errCnt = errorClasses.size();
         if (errCnt > 0) {
-            logger.d(TAG, "getApiMethod:Parse class error with ClassNotFoundException, total:" + errCnt);
+            logger.e(TAG, "getApiMethod:Parse class error with ClassNotFoundException, total:" + errCnt);
         }
         for (int i = 0; i < errCnt; i++) {
-            logger.d(TAG, "getApiMethod:class:" + errorClasses.get(i));
+            logger.e(TAG, "getApiMethod:class:" + errorClasses.get(i));
         }
-        logger.d(TAG, "getApiMethod:success count:" + successCnt);
+        logger.i(TAG, "generate sdk java stub source file finished, success count:" + successCnt);
     }
 
     private boolean excludeClass(String clzName) {
@@ -917,7 +917,7 @@ public class Sag {
     }
 
     private void writeBufferToFile(StringBuffer buffer, String fileName) {
-        //logger.d(TAG, "writeBufferToFile:fileName:" + fileName);
+        logger.d(TAG, "writeBufferToFile:fileName:" + fileName);
         File file = new File(fileName);
         if (file.exists()) {
             file.delete();

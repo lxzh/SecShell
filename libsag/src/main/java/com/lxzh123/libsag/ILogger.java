@@ -1,7 +1,7 @@
 package com.lxzh123.libsag;
 
 /**
- * description Logger interface$
+ * description Logger interface
  * author      Created by lxzh
  * date        2019-09-28
  */
@@ -13,7 +13,7 @@ public interface ILogger {
     static final int ERROR = 6;
     static final int ASSERT = 7;
 
-    void setLevel(int level);
+    ILogger setLevel(int level);
 
     void v(String TAG, String msg);
 

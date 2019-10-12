@@ -53,13 +53,18 @@ def jar2dex(String d2jPath, String jarFile, String dexFile) {
     cmd.execute()
 }
 
-def copyFile(String fromFile, String intoDir, String fileName) {
+def copyFile(String fromFileName, String intoDir, String fileName) {
+    def fromFile = new File(fromFileName)
+    if (!fromFile.exists()) {
+        println("copyFile error: fromFile:" + fromFile.getAbsolutePath() + " is not exists")
+        return
+    }
     def intoFileName = intoDir + fileName
     def intoFile = new File(intoFileName)
     if (intoFile.exists()) {
         intoFile.delete()
     }
-    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("fromFile=" + fromFileName)
     println("intoDir=" + intoDir)
     println("fileName=" + fileName)
     println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())
@@ -152,9 +157,10 @@ build {
         println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)
-        def command = "java -jar " + jarFile + " " + dexJarFile + " " + outFolder + " " + libDir
+        def command = "java -jar -Xverify:none " + jarFile + " sag " + dexJarFile + " " + outFolder + " " + libDir
         println("command:" + command)
-        command.execute()
+//        command.execute()
+        println(command.execute().text.trim())
         def fileCnt = getFileCount(outFolder)
         println("java file count:" + fileCnt)
         sleep(5000)

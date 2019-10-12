@@ -22,8 +22,9 @@ class Logger implements ILogger {
     }
 
     @Override
-    public void setLevel(int level) {
+    public ILogger setLevel(int level) {
         this.level = level;
+        return this;
     }
 
     @Override

@@ -16,6 +16,7 @@ out/
 # Gradle files
 .gradle/
 build/
+gradle/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -70,4 +71,12 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 
-sdk/
+.settings/
+
+sdk/*.aar
+sdk/*.jar
+sdk/*.dex
+sdk/*.data
+sdk/sdk
+sdk/shell
+sdk/libs/android.jar

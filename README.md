@@ -2,7 +2,17 @@
 
 [中文说明](README_CN.md "中文")
 
-## 1. prepare sdk
+## 1. prepare shell tool
+
+> Only need to compile once, subsequent libshell remains unchanged, just replace the sdk.data in assets
+
+```
+gradle libshell:build
+```
+
+build libshell and copy libshell.aar to the sdk directory
+
+## 2. prepare sdk
 
 - build sdk
 
@@ -12,38 +22,9 @@ build the sdk to be reinforced, such as libcore
 gradle libcore:build
 ```
 
-- unzip aar
+After compiling, copy the aar to the sdk directory and modify the 'SDK_AAR_NAME' in gradle.properties to configure the file name of the corresponding aar
 
-unzip the release sdk aar in `libcore/build/outputs/aar/libcore.aar`, get the jar `libcore.jar` file in the aar package, copy libcore.jar to `libsag/output` for generating stub-sdk
-
-- jar to dex
-
-transfore the jar file to dex file, because BaseDexClassLoader cannot load normal jar package, so we need to convert the jar to dex package with dx tool in android sdk:
-
-```
-dx --dex --output=libcore.dex libcore.jar
-```
-
-or d2j-jar2dex.bat:
-
-```
-d2j-jar2dex.bat libcore.jar -o libcore.dex
-```
-
-then copy libcore.dex to `libmix/output` generate mixed dex
-
-## 2. sdk proguard
-
-- encrypt sdk
-
- use libmix to encrypt sdk
-
-```
-gradle libmix:build
-```
-
-build libmix to exec encrypt task, the build script will automatically encrypt the dex and copy it to `libshell/src/main/assets/`
-
+## 3. sdk proguard
 
 - generate stub-sdk
 
@@ -54,15 +35,35 @@ In this scheme, the stub-sdk is generated based on the reflection principle of J
 gradle libsag:build
 ```
 
+Compiling libsag performs the following tasks in sequence:
+1. Unzip the aar file of sdk to the `sdk/sdk` directory, extract the classes.jar package from the sdk directory and rename it as `sdk.jar`
+2. Extract libshell aar file to `sdk/shell` directory
+3. Convert sdk.jar to sdk.dex file for encryption
+4. Generate the empty Java class source code based on sdk.jar to the Java directory of corestub: `corestub/src/main/java/`, the path is specified by ` SDK_STUB_SRC_FOLDER` in gradle.properties
+
+
+- encrypt sdk
+
+ use libmix to encrypt sdk
+
+```
+gradle libmix:build
+```
+
+Compile libmix to perform the encryption task. The compile script will automatically complete the encryption dex and copy it to `sdk/shell/assets/`. Then repackage libshell as aar file and automatically copy aar to the specified demo dependent library directory, the path is specified by ` DEMO_LIB_FOLDER` in gradle.properties
+
+
+
+
 - build stub-sdk
 
 ```
 gradle corestub:build
 ```
 
-build corestub to generate `corestub.aar` for **compileOnly** use in user app, the build script will automatically copy it to `demo/geetestsdk/`
+build corestub to generate `corestub.aar` for **compileOnly** use in user app, compiling the script automatically copies aar to the demo dependent library directory, the path is specified by ` DEMO_LIB_FOLDER` in gradle.properties
 
-## 3. build demo
+## 4. build demo
 
 ```
 gradle demo:build

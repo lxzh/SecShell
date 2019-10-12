@@ -1,6 +1,7 @@
 package com.lxzh123.libcore;
 
-import androidx.annotation.Nullable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 public class TemplateClass0<T> {
     @Override
