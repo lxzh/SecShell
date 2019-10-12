@@ -1,4 +1,6 @@
-package com.lxzh123.libsag;
+package com.lxzh123.libsag.zip;
+
+import com.lxzh123.libsag.log.Logger;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;

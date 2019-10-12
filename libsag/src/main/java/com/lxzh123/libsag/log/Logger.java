@@ -1,11 +1,11 @@
-package com.lxzh123.libsag;
+package com.lxzh123.libsag.log;
 
 /**
  * description Logger$
  * author      Created by lxzh
  * date        2019-09-28
  */
-class Logger implements ILogger {
+public class Logger implements ILogger {
 
     private int level = VERBOSE;
     private static volatile Logger instance;
@@ -72,6 +72,18 @@ class Logger implements ILogger {
         if (level <= ASSERT) {
             String message = "[Assert][" + TAG + "]:" + msg;
             log(message);
+        }
+    }
+
+    @Override
+    public void printStacktrace(String TAG, Exception e) {
+        if (e == null) {
+            return;
+        }
+        e(TAG, "Exception message:" + e.getMessage());
+        StackTraceElement[] traces = e.getStackTrace();
+        for (int i = 0; i < traces.length; i++) {
+            e(TAG, "Exception:" + traces[i].toString());
         }
     }
 

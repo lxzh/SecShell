@@ -37,10 +37,34 @@ task copyJar(type: Copy) {
     into('build/libs/lib')
 }
 
+def String pathJoin(String path1, String path2) {
+    def a = path1.endsWith(File.separator)
+    def b = path2.startsWith(File.separator)
+    if (a && b) {
+        return path1 + path2.substring(1)
+    } else if (a != b) {
+        return path1 + path2
+    } else {
+        return path1 + File.separator + path2
+    }
+}
+
 def unzip(String jar, String libs, String zipFile, String outPath) {
     def cmd = "java -jar -Djava.ext.dirs=" + libs + " " + jar + " unzip " + zipFile + " " + outPath
     println("command:" + cmd)
     println(cmd.execute().text.trim())
+}
+
+def parsePkgName(String jar, String sdkManifestName, String stubManifestName) {
+    def cmd = "java -jar " + jar + " pkgname " + sdkManifestName + " " + stubManifestName
+    println("command:" + cmd)
+    def output = cmd.execute().text.trim()
+    println(output)
+    def pkgName = ""
+    if (output.contains("pkgName")) {
+        pkgName = output.substring(output.indexOf(":") + 1)
+    }
+    return pkgName
 }
 
 def jar2dex(String d2jPath, String jarFile, String dexFile) {
@@ -78,6 +102,33 @@ def copyFile(String fromFileName, String intoDir, String fileName) {
     println(" after copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists() + ", size=" + intoFile.length())
 }
 
+def copyPath(String srcPath, String dstPath) {
+    println("srcPath:" + srcPath)
+    println("dstPath:" + dstPath)
+    def srcFile = new File(srcPath)
+    for (File file : srcFile.listFiles()) {
+        def name = file.getName()
+        def dstName = pathJoin(dstPath, name)
+        println("file:" + file.getAbsolutePath() + ",name=" + name)
+        println("dstName:" + dstName)
+        if (file.isFile()) {
+            copy {
+                from file.getAbsolutePath()
+                into dstPath
+                rename {
+                    name
+                }
+            }
+        } else {
+            def newPath = new File(dstName)
+            if (!newPath.exists()) {
+                newPath.mkdirs()
+            }
+            copyPath(file.getAbsolutePath(), dstName)
+        }
+    }
+}
+
 def delPath(String path) {
     def dir = new File(path)
     def files = dir.listFiles()
@@ -86,6 +137,7 @@ def delPath(String path) {
             file.delete()
         } else {
             delPath(file.getAbsolutePath())
+            file.delete()
         }
     }
 }
@@ -138,22 +190,33 @@ build {
         unzip(jarFile, libDir, shellFile, shellUnzipPath)
         sleep(1000)
 
-        println("step 4: copy sdk jar to sdk directory=======================")
+        println("step 4: merge sdk so to shell=======================")
+        def sdkJni = sdkUnzipPath + "jni"
+        def shellJni = shellUnzipPath + "jni"
+        copyPath(sdkJni, shellJni)
+
+        println("step 5: copy sdk jar to sdk directory=======================")
         //copy jar in aar to sdk directory
         def jarInAar = sdkUnzipPath + "classes.jar"
         copyFile(jarInAar, sdkDir, sdkJarName)
         def dexJarFile = sdkDir + sdkJarName
 
-        println("step 5: transform sdk jar to dex=======================")
+        println("step 6: parse sdk package name and update to stub=======================")
+        def sdkManifestName = sdkUnzipPath + "AndroidManifest.xml"
+        def stubManifestName = stubSrcDir + "AndroidManifest.xml"
+        def pkgName = parsePkgName(jarFile, sdkManifestName, stubManifestName)
+        println("pkgName=" + pkgName)
+
+        println("step 7: transform sdk jar to dex=======================")
         //transform sdk jar to dex
         def dex2jarFile = dex2jarDir + "d2j-jar2dex.bat"
         def dexFile = sdkDir + sdkDexName
         jar2dex(dex2jarFile, dexJarFile, dexFile)
         println("dexFile=" + dexFile + ", exists=" + (new File(dexFile).exists()))
 
-        println("step 6: generate stub sdk=======================")
+        println("step 8: generate stub sdk=======================")
         //exec command to generate source code of stub sdk
-        def outFolder = stubSrcDir
+        def outFolder = stubSrcDir + "java" + File.separator
         println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("outFolder=" + outFolder)

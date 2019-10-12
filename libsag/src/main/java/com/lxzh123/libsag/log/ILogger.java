@@ -1,4 +1,4 @@
-package com.lxzh123.libsag;
+package com.lxzh123.libsag.log;
 
 /**
  * description Logger interface
@@ -26,4 +26,6 @@ public interface ILogger {
     void e(String TAG, String msg);
 
     void a(String TAG, String msg);
+
+    void printStacktrace(String TAG, Exception e);
 }

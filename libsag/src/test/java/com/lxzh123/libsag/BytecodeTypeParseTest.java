@@ -1,5 +1,8 @@
 package com.lxzh123.libsag;
 
+import com.lxzh123.libsag.log.Logger;
+import com.lxzh123.libsag.sag.Sag;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

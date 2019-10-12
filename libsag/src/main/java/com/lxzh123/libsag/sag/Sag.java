@@ -1,4 +1,6 @@
-package com.lxzh123.libsag;
+package com.lxzh123.libsag.sag;
+
+import com.lxzh123.libsag.log.ILogger;
 
 import java.io.File;
 import java.io.FileWriter;
