@@ -22,13 +22,18 @@ android {
 
 }
 
-def copyFile(String fromFile, String intoDir, String fileName) {
+def copyFile(String fromFileName, String intoDir, String fileName) {
+    def fromFile = new File(fromFileName)
+    if (!fromFile.exists()) {
+        println("copyFile error: fromFile:" + fromFile.getAbsolutePath() + " is not exists")
+        return
+    }
     def intoFileName = intoDir + fileName
     def intoFile = new File(intoFileName)
     if (intoFile.exists()) {
         intoFile.delete()
     }
-    println("fromFile=" + fromFile + ", exists=" + (new File(fromFile).exists()))
+    println("fromFile=" + fromFileName)
     println("intoDir=" + intoDir)
     println("fileName=" + fileName)
     println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())

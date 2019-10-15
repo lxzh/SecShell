@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name="com.lxzh123.sdkshellapp.App">
-        <activity android:name="com.lxzh123.sdkshellapp.MainActivity">
+        <activity android:name="com.lxzh123.sdkshellapp.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

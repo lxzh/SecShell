@@ -10,15 +10,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 
-public class Loader {
+public class Core {
 
-    private final static String TAG = "Loader";
+    private final static String TAG = "Core";
+    private final static int DECRYPT_MASK = 0xAA;
 
     public final static String ASSETS_RES_NAME = BuildConfig.SDK_MIX_NAME;
     /**
@@ -43,13 +45,33 @@ public class Loader {
 
         boolean initInJni = true;
         boolean injectInJni = true;
-
+        test();
         String path = prepare(context, initInJni, injectInJni);
 //        testLoadJar(context, path);
         if (!injectInJni) {
             injectDex(context, path);
         }
         printClassLoaderInfo(context);
+    }
+
+    private static void test() {
+        try {
+            Class<?> BuildConfigClass = Class.forName("com.lxzh123.libshell.BuildConfig");
+            Field sdkDexNameField = BuildConfigClass.getField("SDK_DEX_NAME");
+            Field sdkMixNameField = BuildConfigClass.getField("SDK_MIX_NAME");
+            Object sdkDexName = sdkDexNameField.get(BuildConfigClass);
+            Object sdkMixName = sdkMixNameField.get(BuildConfigClass);
+
+            Log.d(TAG, "test:sdkDexName=" + sdkDexName);
+            Log.d(TAG, "test:sdkMixName=" + sdkMixName);
+
+            Field[] fields = BuildConfigClass.getDeclaredFields();
+            for (Field field : fields) {
+                Log.d(TAG, "field:" + field.toString());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static String prepare(Context context, boolean initInJni, boolean injectInJni) {
@@ -103,6 +125,7 @@ public class Loader {
             byte[] buffer = new byte[1024];
             int len;
             while ((len = inputStream.read(buffer)) > 0) {
+                encryptBuffer(buffer, len);
                 fos.write(buffer, 0, len);
             }
         } catch (IOException iex) {
@@ -130,12 +153,50 @@ public class Loader {
         return outFile.getAbsolutePath();
     }
 
+    private static void encryptBuffer(byte[] buffer, int len) {
+        int max;
+        byte l, r;
+        if (len % 2 == 0) {
+            max = len;
+        } else {
+            max = len - 1;
+            buffer[max] = (byte) (buffer[max] ^ DECRYPT_MASK);
+        }
+        for (int i = 0; i < max; i += 2) {
+            l = (byte) (buffer[i] ^ DECRYPT_MASK);
+            r = (byte) (buffer[i + 1] ^ DECRYPT_MASK);
+            buffer[i] = r;
+            buffer[i + 1] = l;
+        }
+    }
+
     private static void printClassLoaderInfo(Context context) {
         Log.d(TAG, "printClassLoaderInfo");
         ClassLoader classLoader = context.getClassLoader();
         Log.d(TAG, "classLoader:" + classLoader);
         Class dexPathClassLoader = classLoader.getClass().getSuperclass();
         Log.d(TAG, "classLoader super:" + dexPathClassLoader);
+
+        PathClassLoader pathClassLoader = (PathClassLoader) context.getClassLoader();//获取加载当前类的ClassLoader
+        try {
+            //获取当前classLoader(PathClassLoader)的dexElements,默认一个数组中都只有1个dexFile
+            Object[] dexElements = (Object[]) ClassLoaderUtil.getDexElements(ClassLoaderUtil.getPathList(pathClassLoader));
+            System.out.println("dexElements=" + Arrays.toString(dexElements) + ",len=" + dexElements.length);
+            Class ElementClass = dexElements[0].getClass();
+            Field dexFileField = ElementClass.getDeclaredField("dexFile");
+            dexFileField.setAccessible(true);
+            Object dexFile0 = dexFileField.get(dexElements[0]);
+            Class dexFileClass = dexFile0.getClass();
+            Method getNameMethod = dexFileClass.getDeclaredMethod("getName");
+
+            for (Object dexElement : dexElements) {
+                Object dexFile = dexFileField.get(dexElement);
+                Class dexClass = dexFile.getClass();
+                Log.d(TAG, "dexElement=" + dexElement + ", dexFile=" + getNameMethod.invoke(dexFile, null));
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     private static void testLoadJar(Context context, String jarPath) {

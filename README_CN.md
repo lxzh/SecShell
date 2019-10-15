@@ -67,3 +67,36 @@ gradle demo:build
 ```
 
 编译demo工程生成演示apk
+
+> 如果需要兼容android4.1~android4.4，所有Application中引用到corestub中的类必需增加一个包装类透传这些类中的方法，如：
+
+Application中引用LIB:
+```
+import com.lxzh123.corestub.LIB;
+...
+int square = LIB.get().square(5);
+Log.d(TAG, "call lib.square:" + square);
+```
+增加一个包装类，确保LIB不暴露在Application中：
+
+```
+package com.lxzh123.sdkshellapp;
+
+import com.lxzh123.libcore.LIB;
+
+/**
+ * Compatible with android4.x version
+ */
+public class CoreStub {
+    public static int init(int param) {
+        return LIB.get().square(param);
+    }
+}
+```
+
+通过引用包装类间接引用LIB：
+
+```
+int square = CoreStub.init(5);
+Log.d(TAG, "call lib.square:" + square);
+```

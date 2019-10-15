@@ -70,3 +70,39 @@ gradle demo:build
 ```
 
 build the demo project to get example apk
+
+> If you want to be compatible with android4.1~android4.4, all classes referenced to corestub in Application must add a wrapper to pass through methods in those classes. Such as:
+
+
+Application中引用LIB:
+
+```
+import com.lxzh123.corestub.LIB;
+...
+int square = LIB.get().square(5);
+Log.d(TAG, "call lib.square:" + square);
+```
+
+Add a wrapper class to ensure that LIB is not exposed to Application:
+
+```
+package com.lxzh123.sdkshellapp;
+
+import com.lxzh123.libcore.LIB;
+
+/**
+ * Compatible with android4.x version
+ */
+public class CoreStub {
+    public static int init(int param) {
+        return LIB.get().square(param);
+    }
+}
+```
+
+Reference LIB indirectly by referencing the wrapper class:
+
+```
+int square = CoreStub.init(5);
+Log.d(TAG, "call lib.square:" + square);
+```

@@ -15,33 +15,19 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
-const char* PKG_NAME = "com/lxzh123/libshell";
-#define JNIREG_CLASS "com/lxzh123/libshell/Helper"   //指定要注册的类
+const char *PKG_NAME = "com/lxzh123/libshell";
+const char *SHELL_CONFIG_NAME = "com/lxzh123/libshell/BuildConfig";
+#define JNIREG_CLASS "com/lxzh123/libshell/Helper"
 
 int g_sdk_int = 0;
 bool g_isArt = false;
 char g_priv_dir[256] = {0};
 const char *g_file_dir = nullptr;
-const char BUILD_CONFIG[] = "/BuildConfig";
 #define MAGIC            ".shell"
-const char* DAT_NAME =   ".data";
-const char* TAR_NAME =   ".dex";
+const char *DAT_NAME = ".data";
+const char *TAR_NAME = ".dex";
 
 void inject_dex(JNIEnv *env, jobject ctx, const char *dex_path);
-
-char *get_config_class_name(JNIEnv *env, jstring pkg_name) {
-    int pkg_name_len = env->GetStringLength(pkg_name);
-    char *config_name = (char *) env->GetStringUTFChars(pkg_name, NULL);
-
-    strcat(config_name, BUILD_CONFIG);
-    for (int i = 0; i < pkg_name_len; i++) {
-        if (config_name[i] == '.') {
-            config_name[i] = '/';
-        }
-    }
-
-    return config_name;
-}
 
 extern "C"
 JNIEXPORT jstring JNICALL Helper_init
@@ -59,17 +45,30 @@ JNIEXPORT jstring JNICALL Helper_init
                                                       "()Ljava/lang/String;");
     jstring pkg_name = static_cast<jstring >( env->CallObjectMethod(ctx, getPackageNameMethod));
     char *c_pkg_name = (char *) env->GetStringUTFChars(pkg_name, NULL);
-    char *config_name = get_config_class_name(env, env->NewStringUTF(PKG_NAME));
-//    char *config_name = get_config_class_name();
-    LOGD("[+] pkgName:%s configName:%s", c_pkg_name, config_name);
+    LOGD("[+] pkgName:%s configName:%s", c_pkg_name, SHELL_CONFIG_NAME);
 
-    jclass BuildConfigClass = env->FindClass(config_name);
-    jfieldID sdkDexNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_DEX_NAME", "Ljava/lang/String;");
-    jfieldID sdkMixNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_MIX_NAME", "Ljava/lang/String;");
+    jclass BuildConfigClass = env->FindClass(SHELL_CONFIG_NAME);
+    if (env->ExceptionCheck()) {
+        LOGE("[-] FindClass:%s failed", SHELL_CONFIG_NAME);
+        return env->NewStringUTF("error");
+    }
+    jfieldID sdkDexNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_DEX_NAME",
+                                                       "Ljava/lang/String;");
+    if (env->ExceptionCheck()) {
+        LOGE("[-] GetStaticFieldID:%s  failed", "SDK_DEX_NAME");
+        return env->NewStringUTF("error");
+    }
+    jfieldID sdkMixNameFieldId = env->GetStaticFieldID(BuildConfigClass, "SDK_MIX_NAME",
+                                                       "Ljava/lang/String;");
+    if (env->ExceptionCheck()) {
+        LOGE("[-] GetStaticFieldID:%s  failed", "SDK_MIX_NAME");
+        return env->NewStringUTF("error");
+    }
 
-    jstring dexName = (jstring)env->GetStaticObjectField(BuildConfigClass, sdkDexNameFieldId);
-    jstring mixName = (jstring)env->GetStaticObjectField(BuildConfigClass, sdkMixNameFieldId);
-    LOGD("[+] dexName:%s mixName:%s", env->GetStringUTFChars(dexName, NULL), env->GetStringUTFChars(mixName, NULL));
+    jstring dexName = (jstring) env->GetStaticObjectField(BuildConfigClass, sdkDexNameFieldId);
+    jstring mixName = (jstring) env->GetStaticObjectField(BuildConfigClass, sdkMixNameFieldId);
+    LOGD("[+] dexName:%s mixName:%s", env->GetStringUTFChars(dexName, NULL),
+         env->GetStringUTFChars(mixName, NULL));
 
     DAT_NAME = env->GetStringUTFChars(mixName, NULL);
     TAR_NAME = env->GetStringUTFChars(dexName, NULL);
@@ -163,10 +162,10 @@ void inject_dex(JNIEnv *env, jobject ctx, const char *dex_path) {
     jclass ElementClass = env->GetObjectClass(env->GetObjectArrayElement(dexElement1, 0));
 //    jclass ElementClass = env->FindClass("dalvik/system/DexPathList$Element");
     jobjectArray newElements = env->NewObjectArray(len + 1, ElementClass, NULL);
+    env->SetObjectArrayElement(newElements, 0, env->GetObjectArrayElement(dexElement2, 0));
     for (int i = 0; i < len; ++i) {
-        env->SetObjectArrayElement(newElements, i, env->GetObjectArrayElement(dexElement1, i));
+        env->SetObjectArrayElement(newElements, i + 1, env->GetObjectArrayElement(dexElement1, i));
     }
-    env->SetObjectArrayElement(newElements, len, env->GetObjectArrayElement(dexElement2, 0));
     env->SetObjectField(pathList1, dexElementsId, newElements);
 
     LOGD("[+] inject_dex 7");

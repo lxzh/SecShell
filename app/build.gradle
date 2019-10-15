@@ -1,15 +1,22 @@
 apply plugin: 'com.android.application'
 
+apply plugin: 'patch-gradle-plugin'
+patchPlugin{
+    enable = true
+//    excludePackage = ['com/lxzh123/sdkshellapp/activity']
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.lxzh123.sdkshellapp"
-        minSdkVersion 21
+        minSdkVersion 14
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+//        multiDexEnable true
     }
     buildTypes {
         release {
@@ -43,7 +50,7 @@ build {
     }
 }
 
-build.dependsOn([':corestub:build', ':libshell:build'])
+//build.dependsOn([':corestub:build', ':libshell:build'])
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -54,4 +61,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     compileOnly project(':corestub')
     implementation project(':libshell')
+    implementation 'com.android.support:multidex:1.0.0'
 }
