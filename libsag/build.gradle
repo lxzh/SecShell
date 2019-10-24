@@ -17,6 +17,7 @@ ext {
     shellAarName = "${SHELL_NAME}"
     stubSrcDir = "${SDK_STUB_SRC_FOLDER}"
     dex2jarDir = "${DEX2JAR_TOOL_FOLDER}"
+    demoLibFolder = "${DEMO_LIB_FOLDER}"
 }
 
 jar {
@@ -75,6 +76,12 @@ def jar2dex(String d2jPath, String jarFile, String dexFile) {
     def cmd = d2jPath + " " + jarFile + " -o " + dexFile + " --force"
     println("command:" + cmd)
     cmd.execute()
+}
+
+def jar2stub(String jar, String libs, String inputJar, String outputJar) {
+    def cmd = "java -jar -Djava.ext.dirs=" + libs + " " + jar + " " + inputJar + " " + outputJar + " +*"
+    println("command:" + cmd)
+    println(cmd.execute().text.trim())
 }
 
 def copyFile(String fromFileName, String intoDir, String fileName) {
@@ -201,31 +208,25 @@ build {
         copyFile(jarInAar, sdkDir, sdkJarName)
         def dexJarFile = sdkDir + sdkJarName
 
-        println("step 6: parse sdk package name and update to stub=======================")
-        def sdkManifestName = sdkUnzipPath + "AndroidManifest.xml"
-        def stubManifestName = stubSrcDir + "AndroidManifest.xml"
-        def pkgName = parsePkgName(jarFile, sdkManifestName, stubManifestName)
-        println("pkgName=" + pkgName)
-
-        println("step 7: transform sdk jar to dex=======================")
+        println("step 6: transform sdk jar to dex=======================")
         //transform sdk jar to dex
         def dex2jarFile = dex2jarDir + "d2j-jar2dex.bat"
         def dexFile = sdkDir + sdkDexName
         jar2dex(dex2jarFile, dexJarFile, dexFile)
         println("dexFile=" + dexFile + ", exists=" + (new File(dexFile).exists()))
 
-        println("step 8: generate stub sdk=======================")
+        println("step 7: generate stub sdk and copy to demo libs=======================")
         //exec command to generate source code of stub sdk
         def outFolder = stubSrcDir + "java" + File.separator
+        def stubJarName = sdkAarName.replace(".aar", ".jar")
+        def mkstubsJarFile = sdkDir + "mkstubs.jar"
+        def stubJarFile = sdkDir + stubJarName
         println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
+        println("stubJarFile=" + stubJarFile)
         println("outFolder=" + outFolder)
-        def command = "java -jar -Xverify:none " + jarFile + " sag " + dexJarFile + " " + outFolder + " " + libDir
-        println("command:" + command)
-//        command.execute()
-        println(command.execute().text.trim())
-        def fileCnt = getFileCount(outFolder)
-        println("java file count:" + fileCnt)
+        jar2stub(mkstubsJarFile, libDir, dexJarFile, stubJarFile)
+        copyFile(stubJarFile, demoLibFolder, stubJarName)
         sleep(5000)
         println("=====================" + taskName + " doLast end.=========================")
     }

@@ -71,12 +71,14 @@ gradle demo:build
 > 如果需要兼容android4.1~android4.4，所有Application中引用到corestub中的类必需增加一个包装类透传这些类中的方法，如：
 
 Application中引用LIB:
+
 ```
 import com.lxzh123.corestub.LIB;
 ...
 int square = LIB.get().square(5);
 Log.d(TAG, "call lib.square:" + square);
 ```
+
 增加一个包装类，确保LIB不暴露在Application中：
 
 ```

@@ -1,0 +1,21 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "8"
+targetCompatibility = "8"
+
+jar {
+    //项目名，也是生成的jar的名字
+    baseName = "mkstubs"
+    //项目版本号，这部分内容会写进manifest
+//    version = "1.0"
+    //项目的manifest定义，其中就包含最关键的入口类定义
+    manifest { attributes 'Main-Class': 'com.android.mkstubs.Main' }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked"
+    }
+}
