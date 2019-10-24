@@ -1,0 +1,69 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    implementation 'org.apache.commons:commons-compress:1.19'
+}
+
+sourceCompatibility = "8"
+targetCompatibility = "8"
+
+ext {
+    sdkFolder = "${SDK_FOLDER}"
+}
+
+jar {
+    //项目名，也是生成的jar的名字
+    baseName = "libzip"
+    //项目版本号，这部分内容会写进manifest
+    version = "1.0"
+    //项目的manifest定义，其中就包含最关键的入口类定义
+    manifest { attributes 'Main-Class': 'com.lxzh123.libzip.Main' }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked"
+    }
+}
+
+def copyFile(String fromFileName, String intoDir, String fileName) {
+    def fromFile = new File(fromFileName)
+    if (!fromFile.exists()) {
+        println("copyFile error: fromFile:" + fromFile.getAbsolutePath() + " is not exists")
+        return
+    }
+    def intoFileName = intoDir + fileName
+    def intoFile = new File(intoFileName)
+    if (intoFile.exists()) {
+        intoFile.delete()
+    }
+    println("fromFile=" + fromFileName)
+    println("intoDir=" + intoDir)
+    println("fileName=" + fileName)
+    println("before copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists())
+    copy {
+        from fromFile
+        into intoDir
+        rename {
+            fileName
+        }
+    }
+    println(" after copy, file=" + intoFile.getAbsolutePath() + ", exists=" + intoFile.exists() + ", size=" + intoFile.length())
+}
+
+build {
+    def taskName = getProject().getName() + " " + getName()
+    doLast {
+        println("=====================" + taskName + " doLast start.=======================")
+        println("step 1: copy jar file to sdk directory=======================")
+        //copy jar file to sdk directory
+        def rootDir = getRootDir().getAbsolutePath()
+        def buildDir = getBuildDir().getAbsolutePath()
+        def sdkDir = rootDir + File.separator + sdkFolder + File.separator
+        def fileName = jar.baseName + "-" + jar.version + ".jar"
+        def fromFile = buildDir + File.separator + "libs" + File.separator + fileName
+        def jarName = "libzip.jar"
+        copyFile(fromFile, sdkDir, jarName)
+        println("=====================" + taskName + " doLast end.=========================")
+    }
+}

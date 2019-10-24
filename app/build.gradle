@@ -53,7 +53,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    compileOnly project(':corestub')
+    compileOnly project(':libcore')
     implementation project(':libshell')
     implementation 'com.android.support:multidex:1.0.0'
 }
