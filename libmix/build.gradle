@@ -16,6 +16,7 @@ ext {
     shellAarName = "${SHELL_NAME}"
     demoLibFolder = "${DEMO_LIB_FOLDER}"
     dex2jarDir = "${DEX2JAR_TOOL_FOLDER}"
+    mkstubsConf = "${MKSTUBS_CONF}"
 }
 
 jar {
@@ -61,8 +62,13 @@ def jar2dex(String d2jPath, String jarFile, String dexFile) {
     cmd.execute()
 }
 
-def jar2stub(String jar, String libs, String inputJar, String outputJar) {
-    def cmd = "java -jar -Djava.ext.dirs=" + libs + " " + jar + " " + inputJar + " " + outputJar + " +*"
+def jar2stub(String jar, String libs, String conf, String inputJar, String outputJar) {
+    def cmd = "java -jar -Djava.ext.dirs=" + libs + " " + jar + " " + inputJar + " " + outputJar
+    if(conf.empty) {
+        cmd += " +*"
+    } else {
+        cmd += " @"+conf
+    }
     println("command:" + cmd)
     println(cmd.execute().text.trim())
 }
@@ -201,12 +207,12 @@ build {
         println("jarFile=" + jarFile + ", exists=" + (new File(jarFile).exists()))
         println("dexJarFile=" + dexJarFile)
         println("stubJarFile=" + stubJarFile)
-        jar2stub(mkstubsJarFile, libDir, dexJarFile, stubJarFile)
+        jar2stub(mkstubsJarFile, libDir, mkstubsConf, dexJarFile, stubJarFile)
         copyFile(stubJarFile, demoLibFolder, stubJarName)
 
         println("step 8: mix dex=======================")
         //exec command to mix dex file
-        jarName = "libzip.jar"
+        jarName = "libmix.jar"
         jarFile = sdkDir + jarName
         def srcFile = sdkDir + sdkDexName
         def dstFile = sdkDir + sdkMixName

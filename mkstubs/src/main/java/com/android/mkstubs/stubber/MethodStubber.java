@@ -55,15 +55,15 @@ public class MethodStubber extends MethodVisitor {
                 "(Ljava/lang/String;)V",        // desc
                 false);
         mv.visitInsn(Opcodes.ATHROW);
-        Label l1 = new Label();
-        mv.visitLabel(l1);
-        mv.visitLocalVariable(
-                "this",                                         // name
-                "Lcom/android/mkstubs/stubber/MethodStubber;",  // desc
-                null,                                           // signature
-                l0,                                             // label start
-                l1,                                             // label end
-                0);                                             // index
+//        Label l1 = new Label();
+//        mv.visitLabel(l1);
+//        mv.visitLocalVariable(
+//                "this",                                         // name
+//                "Lcom/android/mkstubs/stubber/MethodStubber;",  // desc
+//                null,                                           // signature
+//                l0,                                             // label start
+//                l1,                                             // label end
+//                0);                                             // index
         mv.visitMaxs(3, 1); // maxStack, maxLocals
     }
 
