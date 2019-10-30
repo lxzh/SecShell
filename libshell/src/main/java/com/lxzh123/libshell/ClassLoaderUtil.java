@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import dalvik.system.BaseDexClassLoader;
 
 public class ClassLoaderUtil {
-    public static void setField(Object object, Class aClass, String fieldName, Object fieldValue) {
+    static void setField(Object object, Class aClass, String fieldName, Object fieldValue) {
         try {
             Field declaredField = aClass.getDeclaredField(fieldName);
             declaredField.setAccessible(true);
@@ -19,7 +19,7 @@ public class ClassLoaderUtil {
     }
 
     //两个数组对象合并成为一个
-    public static Object combineArray(Object object, Object object2) {
+    static Object combineArray(Object object, Object object2) {
         Class<?> aClass = Array.get(object, 0).getClass();
         Object obj = Array.newInstance(aClass, 2);
         Array.set(obj, 0, Array.get(object2, 0));
@@ -28,7 +28,7 @@ public class ClassLoaderUtil {
         return obj;
     }
 
-    public static Object getDexElements(Object object) {
+    static Object getDexElements(Object object) {
         if (object == null)
             return null;
         Class<?> aClass = object.getClass();
@@ -45,7 +45,7 @@ public class ClassLoaderUtil {
     }
 
     //获取PathList，只有BaseDexClassLoader类中才用pathList变量
-    public static Object getPathList(BaseDexClassLoader classLoader) {
+    static Object getPathList(BaseDexClassLoader classLoader) {
         Class<? extends BaseDexClassLoader> aClass = classLoader.getClass();
         Class<?> superclass = aClass.getSuperclass();
         try {

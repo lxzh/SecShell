@@ -1,2 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lxzh123.libshell" />
+    package="com.lxzh123.libshell">
+
+    <application>
+
+        <provider
+            android:name="com.lxzh123.libshell.InitProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:multiprocess="true" />
+
+    </application>
+
+</manifest>

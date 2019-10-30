@@ -22,15 +22,13 @@ public class Core {
     private final static String TAG = "Core";
     private final static int DECRYPT_MASK = 0xAA;
 
-    public final static String ASSETS_RES_NAME = BuildConfig.SDK_MIX_NAME;
+    final static String ASSETS_RES_NAME = BuildConfig.SDK_MIX_NAME;
     /**
      * can't load non optimization jar package, so a classes.jar in aar package need to convert to
      * dex package with dx tool in android sdk : dx --dex --output=target.dex classes.jar
      * or d2j-jar2dex.bat: d2j-jar2dex.bat classes.jar -o target.dex
      */
-    public final static String TARGET_DEX_NAME = BuildConfig.SDK_DEX_NAME;
-
-    public final static int SDK_VERSION = Build.VERSION.SDK_INT;
+    final static String TARGET_DEX_NAME = BuildConfig.SDK_DEX_NAME;
 
     static {
         try {
@@ -40,7 +38,7 @@ public class Core {
         }
     }
 
-    public static void init(Context context) {
+    static void init(Context context) {
         printClassLoaderInfo(context);
 
         boolean initInJni = true;
@@ -86,7 +84,7 @@ public class Core {
         return dexPath;
     }
 
-    public static void injectDex(Context context, String dexPath) {
+    static void injectDex(Context context, String dexPath) {
         File optDir = context.getDir("dex", 0);
         PathClassLoader pathClassLoader = (PathClassLoader) context.getClassLoader();//获取加载当前类的ClassLoader
         DexClassLoader dexClassLoader = new DexClassLoader(dexPath, optDir.getAbsolutePath(), dexPath, pathClassLoader);
@@ -125,7 +123,7 @@ public class Core {
             byte[] buffer = new byte[1024];
             int len;
             while ((len = inputStream.read(buffer)) > 0) {
-                encryptBuffer(buffer, len);
+                decryptBuffer(buffer, len);
                 fos.write(buffer, 0, len);
             }
         } catch (IOException iex) {
@@ -153,7 +151,7 @@ public class Core {
         return outFile.getAbsolutePath();
     }
 
-    private static void encryptBuffer(byte[] buffer, int len) {
+    private static void decryptBuffer(byte[] buffer, int len) {
         int max;
         byte l, r;
         if (len % 2 == 0) {
@@ -192,7 +190,7 @@ public class Core {
             for (Object dexElement : dexElements) {
                 Object dexFile = dexFileField.get(dexElement);
                 Class dexClass = dexFile.getClass();
-                Log.d(TAG, "dexElement=" + dexElement + ", dexFile=" + getNameMethod.invoke(dexFile, null));
+                Log.d(TAG, "dexElement=" + dexElement + ", dexFile=" + getNameMethod.invoke(dexFile, new Object[]{null}));
             }
         } catch (Throwable e) {
             e.printStackTrace();

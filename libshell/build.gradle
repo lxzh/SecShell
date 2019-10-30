@@ -47,6 +47,10 @@ android {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked"
+}
+
 build {
     def taskName = getProject().getName() + " " + getName()
     doLast {
