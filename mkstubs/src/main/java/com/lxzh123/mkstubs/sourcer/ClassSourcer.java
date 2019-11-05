@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs.sourcer;
+package com.lxzh123.mkstubs.sourcer;
 
-import com.android.mkstubs.Main;
+import com.lxzh123.mkstubs.Main;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;

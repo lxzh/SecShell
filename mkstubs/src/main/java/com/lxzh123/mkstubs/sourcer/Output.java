@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs.sourcer;
+package com.lxzh123.mkstubs.sourcer;
 
 import java.io.IOException;
 import java.io.Writer;

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs;
+package com.lxzh123.mkstubs;
 
-import com.android.mkstubs.Main.Logger;
-import com.android.mkstubs.stubber.ClassStubber;
+import com.lxzh123.mkstubs.stubber.ClassStubber;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -31,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Given a set of already filtered classes, this filters out all private members,

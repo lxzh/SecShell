@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs;
+package com.lxzh123.mkstubs;
 
-import com.android.mkstubs.Main.Logger;
-import com.android.mkstubs.sourcer.ClassSourcer;
-import com.android.mkstubs.sourcer.Output;
+import com.lxzh123.mkstubs.sourcer.ClassSourcer;
+import com.lxzh123.mkstubs.sourcer.Output;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;

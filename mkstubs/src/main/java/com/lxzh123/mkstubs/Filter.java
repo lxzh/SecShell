@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs;
+package com.lxzh123.mkstubs;
 
 import java.util.TreeSet;
 

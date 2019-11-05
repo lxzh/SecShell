@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.mkstubs;
-
-import com.android.mkstubs.Main.Logger;
+package com.lxzh123.mkstubs;
 
 import org.objectweb.asm.ClassReader;
 
