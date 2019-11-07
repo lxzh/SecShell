@@ -28,7 +28,6 @@ import java.util.Map;
 
 /**
  * Main entry point of the MkStubs app.
- * <p/>
  * For workflow details, see {@link #process(Params)}.
  */
 public class Main {
@@ -37,6 +36,7 @@ public class Main {
 
     /**
      * Main entry point. Processes arguments then performs the "real" work.
+     * @param args command line args
      */
     public static void main(String[] args) {
         Main m = new Main();

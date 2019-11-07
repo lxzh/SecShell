@@ -21,7 +21,6 @@ import java.io.Writer;
 
 /**
  * An {@link Output} objects is an helper to write to a character stream {@link Writer}.
- * <p/>
  * It provide some helper methods to the various "sourcer" classes from this package
  * to help them write to the underlying stream.
  */
@@ -31,7 +30,6 @@ public class Output {
 
     /**
      * Creates a new {@link Output} object that wraps the given {@link Writer}.
-     * <p/>
      * The caller is responsible of opening and closing the {@link Writer}.
      * 
      * @param writer The writer to write to. Could be a file, a string, etc.

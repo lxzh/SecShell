@@ -1,4 +1,6 @@
 apply plugin: 'java-library'
+apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'signing'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -63,5 +65,164 @@ build {
         def jarName = "mkstubs.jar"
         copyFile(fromFile, sdkDir, jarName)
         println("=====================" + taskName + " doLast end.=========================")
+    }
+}
+
+ext {
+    ARTIFACT_ID = 'mkstubs'
+    VERSION_NAME = '1.0.0'
+    VERSION_CODE = 1 //your version
+
+    DESCRIPTION = 'make stub jar package from complete jar'
+
+    SITE_URL = 'https://github.com/ljf1239848066/SecShell'
+    GIT_URL = 'https://github.com/ljf1239848066/SecShell.git'
+    GROUP_NAME = 'lxzh'
+    GROUP_ID = 'com.lxzh123'
+    COMPILE_SDK = 29
+    BUILD_TOOLS = '29.0.2'
+
+    MODULE_NAME = 'mkstubs'
+    MODULE_TYPE = 'jar'
+
+    LICENSE = ['Apache-2.0']
+
+    DEVELOPER_ID = 'lxzh'
+    DEVELOPER_NAME = 'lxzh'
+    DEVELOPER_EMAIL = 'leijf1239848066@gmail.com'
+
+    MAVEN_TYPE_SNAPSHOT = false
+
+    IS_UPLOADING = project.getGradle().startParameter.taskNames.any{it.contains('bintrayUpload')}
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+uploadArchives {
+    apply plugin: 'maven'
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newInputStream())
+    def userName = properties.getProperty('maven.user')
+    def password = properties.getProperty('maven.password')
+    def snapshotUrl = properties.getProperty('maven.snapshoturl')
+    def deployUrl = properties.getProperty('maven.deployurl')
+
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: deployUrl) {
+                authentication(userName: userName, password: password)
+            }
+
+            snapshotRepository(url: snapshotUrl) {
+                authentication(userName: userName, password: password)
+            }
+
+            pom.groupId = GROUP_ID
+            pom.artifactId = ARTIFACT_ID
+            pom.version = VERSION_NAME + (MAVEN_TYPE_SNAPSHOT ? '-SNAPSHOT' : '')
+
+            pom.project {
+                name MODULE_NAME
+                packaging MODULE_TYPE
+                // optionally artifactId can be defined here
+                description DESCRIPTION
+                url SITE_URL
+
+                scm {
+                    connection 'scm:git:git@github.com:ljf1239848066/SecShell.git'
+                    developerConnection 'scm:git:git@github.com:ljf1239848066/SecShell.git'
+                    url SITE_URL
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id DEVELOPER_ID
+                        name DEVELOPER_NAME
+                        email DEVELOPER_EMAIL
+                    }
+                }
+            }
+        }
+    }
+}
+
+publish {
+    artifactId = ARTIFACT_ID
+    userOrg = GROUP_NAME
+    groupId = GROUP_ID
+    uploadName = ARTIFACT_ID
+    publishVersion = VERSION_NAME
+    desc = DESCRIPTION
+    website = SITE_URL
+    licences = LICENSE
+}
+subprojects {
+    group = GROUP_NAME
+    version = VERSION
+
+    if (IS_UPLOADING && project.name in [MODULE_NAME]) {
+        println project.name
+        apply plugin: 'maven'
+
+        gradle.taskGraph.whenReady { taskGraph ->
+            taskGraph.getAllTasks().find {
+                it.path == ":$project.name:generatePomFileForMavenPublication"
+            }.doLast {
+                file("build/publications/maven/pom-default.xml").delete()
+                println 'Overriding pom-file to make sure we can sync to maven central!'
+                pom {
+                    //noinspection GroovyAssignabilityCheck
+                    project {
+                        name "$project.name"
+                        artifactId ARTIFACT_ID
+                        packaging project.name == 'compiler' ? 'jar' : 'aar'
+                        description DESCRIPTION
+                        url SITE_URL
+                        version VERSION_NAME
+
+                        scm {
+                            url GIT_URL
+                            connection GIT_URL
+                            developerConnection GIT_URL
+                        }
+
+                        licenses {
+                            license {
+                                name LICENSE
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id DEVELOPER_ID
+                                name DEVELOPER_NAME
+                                email DEVELOPER_EMAIL
+                            }
+                        }
+                    }
+                }.writeTo("build/publications/maven/pom-default.xml")
+            }
+        }
     }
 }
