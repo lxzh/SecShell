@@ -1,0 +1,153 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'com.novoda.bintray-release'
+
+ext {
+    POM_GROUP_ID            = GROUP_ID
+    POM_ARTIFACT_ID         = ARTIFACT_ID      // sdk 标识 artifactId，可以用project.name或者其他名称
+    POM_VERSION_NAME        = VERSION_NAME
+    POM_VERSION_CODE        = VERSION_CODE
+
+    POM_NAME                = ARTIFACT_NAME
+    POM_DESCRIPTION         = DESCRIPTION
+    POM_URL                 = PROJECT_URL
+    POM_INCEPTION_YEAR      = "${Calendar.getInstance().get(Calendar.YEAR)}"
+    POM_PACKAGING           = PACKAGING        // sdk 类型(jar/aar)
+
+    POM_SCM_URL             = PROJECT_URL
+    POM_SCM_CONNECTION      = "${PROJECT_URL}.git"
+    POM_SCM_DEV_CONNECTION  = "${PROJECT_URL}.git"
+
+    POM_ISSUE_SYSTEM        = "github"
+    POM_ISSUE_URL           = "${PROJECT_URL}/issues"
+
+    POM_LICENCE_NAME        = "Apache-2.0"
+    POM_LICENCE_URL         = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    POM_LICENCE_DIST        = "repo"
+
+    POM_DEVELOPER_ID        = DEVELOPER_ID
+    POM_DEVELOPER_NAME      = DEVELOPER_NAME
+    POM_DEVELOPER_EMAIL     = DEVELOPER_EMAIL
+
+    BINTRAY_REPO            = "maven"
+    BINTRAY_ORGANIZATION    = ORGANIZATION
+    BINTRAY_LICENCE         = ['Apache-2.0']
+    BINTRAY_IS_UPLOADING    = project.getGradle().startParameter.taskNames.any{it.contains('bintrayUpload')}
+}
+
+def isReleaseBuild() {
+    return POM_VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+publish {
+    artifactId      = POM_ARTIFACT_ID
+    userOrg         = POM_DEVELOPER_ID
+    groupId         = POM_GROUP_ID
+    uploadName      = POM_ARTIFACT_ID
+    publishVersion  = POM_VERSION_NAME
+    desc            = POM_DESCRIPTION
+    website         = POM_URL
+    licences        = BINTRAY_LICENCE
+}
+
+afterEvaluate { project ->
+    uploadArchives {
+        Properties properties   = new Properties()
+        properties.load(project.rootProject.file('local.properties').newInputStream())
+        def userName                    = properties.getProperty('maven.user')
+        def password                    = properties.getProperty('maven.password')
+        def signingKeyId                = properties.getProperty('signing.keyId')
+        def signingPassword             = properties.getProperty('signing.password')
+        def signingSecretKeyRingFile    = file(properties.getProperty('signing.secretKeyRingFile'))
+
+        // update the default configuration in gradle.properties
+        setProperty("signing.keyId",                signingKeyId)
+        setProperty("signing.password",             signingPassword)
+        setProperty("signing.secretKeyRingFile",    signingSecretKeyRingFile)
+
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                pom.groupId     = POM_GROUP_ID
+                pom.artifactId  = POM_ARTIFACT_ID
+                pom.version     = POM_VERSION_NAME
+
+                repository(url: MAVEN_RELEASE_URL) {
+                    authentication(userName: userName, password: password)
+                }
+                snapshotRepository(url: MAVEN_SNAPSHOT_URL) {
+                    authentication(userName: userName, password: password)
+                }
+//                repository(url: localMavenRepo)
+//                repository(url: uri('../repo')) //deploy到本地仓库
+
+                pom.project {
+                    name                    POM_ARTIFACT_ID
+                    packaging               POM_PACKAGING
+                    description             POM_DESCRIPTION
+                    url                     POM_URL
+
+                    scm {
+                        url                 POM_SCM_URL
+                        connection          POM_SCM_CONNECTION
+                        developerConnection POM_SCM_DEV_CONNECTION
+                    }
+
+                    licenses {
+                        license {
+                            name            POM_LICENCE_NAME
+                            url             POM_LICENCE_URL
+                            distribution    POM_LICENCE_DIST
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id              POM_DEVELOPER_ID
+                            name            POM_DEVELOPER_NAME
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    // java library
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        from project.file('src/main/java/com/Main.groovy')
+//    from sourceSets.main.allSource
+        classifier = 'sources'
+    }
+
+    // android library
+//    task androidJavadocs(type: Javadoc) {
+//        source = android.sourceSets.main.java.srcDirs
+//        classpath += project.files(android.getBootClasspath() .join(File.pathSeparator))
+//    }
+//
+//    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//        classifier = 'javadoc'
+//        from androidJavadocs.destinationDir
+//    }
+//
+//    task androidSourcesJar(type: Jar) {
+//        classifier = 'sources'
+//        from project.file('src/main/java/com/sources')
+//    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+//        archives androidSourcesJar
+    }
+}
